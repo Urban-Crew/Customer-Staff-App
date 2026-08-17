@@ -1,7 +1,9 @@
+import { useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Sparkles } from 'lucide-react-native';
 import AnimatedGlow, { type PresetConfig } from 'react-native-animated-glow';
-import { Badge } from '@ub/ui';
+import { TrueSheet } from '@lodev09/react-native-true-sheet';
+import { Badge, Button } from '@ub/ui';
 
 const glowPreset: PresetConfig = {
   metadata: { name: 'Customer Accent', textColor: '#FFFFFF', category: 'Custom', tags: [] },
@@ -20,12 +22,20 @@ const glowPreset: PresetConfig = {
 };
 
 export default function HomeScreen() {
+  const sheet = useRef<TrueSheet>(null);
+
   return (
     <View style={styles.container}>
       <AnimatedGlow preset={glowPreset}>
         <Badge icon={<Sparkles size={20} color="#fff" />} label="Customer app" />
       </AnimatedGlow>
       <Text style={styles.hint}>Open up app/index.tsx to start working on it!</Text>
+      <Button label="Open sheet" onPress={() => sheet.current?.present()} />
+
+      <TrueSheet ref={sheet} detents={['auto', 0.6, 1]} style={styles.sheetContent}>
+        <Text style={styles.sheetTitle}>A true native bottom sheet</Text>
+        <Button label="Close" variant="secondary" onPress={() => sheet.current?.dismiss()} />
+      </TrueSheet>
     </View>
   );
 }
@@ -39,4 +49,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   hint: { color: '#666' },
+  sheetContent: {
+    padding: 24,
+    gap: 16,
+  },
+  sheetTitle: { fontSize: 16, fontWeight: '600' },
 });

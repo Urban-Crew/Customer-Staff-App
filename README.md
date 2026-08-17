@@ -110,6 +110,10 @@ Installed with `npx expo install` so versions stay aligned with the Expo SDK:
   than the built-in `KeyboardAvoidingView`. `<KeyboardProvider>` wraps the app in
   `app/_layout.tsx`; use its `KeyboardAvoidingView`/`useKeyboardAnimation` etc. in screens
   with text inputs.
+- **@lodev09/react-native-true-sheet** (both apps) — fully native bottom sheet (Fabric,
+  requires New Architecture — on by default on RN 0.81+/Expo SDK 54+, which we're on).
+  `app/index.tsx` has a minimal `<TrueSheet ref={...} detents={[...]}>` + `present()`/
+  `dismiss()` demo in both apps.
 
 ## `@ub/api-client`
 
