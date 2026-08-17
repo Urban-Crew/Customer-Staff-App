@@ -1,0 +1,25 @@
+node_modules
+.turbo
+.pnpm-store
+
+# env
+.env
+.env.local
+.env.*.local
+
+# build output
+dist
+build
+
+# expo (per-app .gitignore also covers this, kept here for anything at root)
+.expo
+.expo-shared
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
