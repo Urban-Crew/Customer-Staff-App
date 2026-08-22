@@ -19,18 +19,10 @@ export class LocationError extends Error {
 }
 
 export async function getCurrentCoordinates(): Promise<Coordinates> {
-  // Check device-wide Location Services *before* permission. On iOS in particular,
-  // when Location Services is off system-wide, requestForegroundPermissionsAsync()
-  // reports the app's permission as "denied" even if it was previously granted —
-  // there's no way for the OS to distinguish the two in that state. Checking
-  // services first avoids misreporting a GPS-off device as a permission problem.
   log.info('Checking device location services…');
   let servicesEnabled = await Location.hasServicesEnabledAsync();
 
   if (!servicesEnabled && Platform.OS === 'android') {
-    // Android (via Google Play services) can prompt the user with a native system
-    // dialog to turn location on right here, no trip to Settings needed. iOS has
-    // no equivalent API — Apple only allows deep-linking to the Settings app.
     log.info('Location services are off — showing the Android system dialog to enable them…');
     try {
       await Location.enableNetworkProviderAsync();
