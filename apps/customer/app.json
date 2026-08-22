@@ -29,7 +29,13 @@
       "expo-splash-screen",
       "expo-font",
       "expo-secure-store",
-      "expo-image"
+      "expo-image",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to show services near you."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

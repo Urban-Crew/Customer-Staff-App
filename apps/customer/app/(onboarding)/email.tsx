@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { Mail } from 'lucide-react-native';
-import { Checkbox, Input, OnboardingLayout, useTheme } from '@ub/ui';
+import { Checkbox, Input, OnboardingLayout } from '@ub/ui';
 import { mockAddEmail } from '../../lib/onboardingMock';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function EmailScreen() {
-  const { colors } = useTheme();
   const email = useOnboardingFlowStore((s) => s.email);
   const setEmail = useOnboardingFlowStore((s) => s.setEmail);
   const [marketingOptIn, setMarketingOptIn] = useState(true);
@@ -31,7 +29,6 @@ export default function EmailScreen() {
 
   return (
     <OnboardingLayout
-      icon={<Mail size={26} color={colors.ink} />}
       title="Add your email"
       description="Please provide your email address for account-related updates and communication."
       onSkip={handleSkip}

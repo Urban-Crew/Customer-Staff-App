@@ -59,15 +59,14 @@ export function Button({
         isSm ? styles.sizeSm : styles.sizeMd,
         fullWidth && styles.fullWidth,
         dynamicVariantStyle,
-        // Loading keeps the primary button dark (just a touch lighter than the resting
-        // color) so the white spinner stays visible, instead of falling back to the
-        // pale disabled fill.
-        loading && !isDisabled && isPrimary && { backgroundColor: colors.primaryPressed },
-        isDisabled && {
-          backgroundColor: colors.disabledBg,
-          borderColor: colors.disabledBorder,
-          borderWidth: isSecondary ? 1 : 0,
-        },
+
+        isPrimary && (isDisabled || loading) && { backgroundColor: colors.primaryPressed },
+        !isPrimary &&
+          isDisabled && {
+            backgroundColor: colors.disabledBg,
+            borderColor: colors.disabledBorder,
+            borderWidth: isSecondary ? 1 : 0,
+          },
         pressed &&
           !isDisabled &&
           !loading && {
@@ -90,11 +89,12 @@ export function Button({
               styles.label,
               isSm && styles.labelSm,
               {
-                color: isDisabled
-                  ? colors.disabledText
-                  : isPrimary
-                    ? colors.primaryText
-                    : colors.secondaryText,
+                color:
+                  !isPrimary && isDisabled
+                    ? colors.disabledText
+                    : isPrimary
+                      ? colors.primaryText
+                      : colors.secondaryText,
               },
               labelStyle,
             ]}

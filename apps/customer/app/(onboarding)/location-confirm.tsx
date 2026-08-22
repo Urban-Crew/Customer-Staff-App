@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { Check, MapPin } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -10,12 +10,34 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { spacing, useTheme } from '@ub/ui';
+import { Button, spacing, useTheme } from '@ub/ui';
 import { mockFetchCurrentLocation } from '../../lib/onboardingMock';
+import {
+  getCurrentCoordinates,
+  openLocationSettings,
+  LocationError,
+  type LocationErrorReason,
+} from '../../lib/location';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
+import { createLogger } from '../../lib/logger';
 
-type Phase = 'fetching' | 'confirmed';
+const log = createLogger('LocationConfirmScreen');
+
+type Phase = 'fetching' | 'confirmed' | 'error';
+
+const ERROR_COPY: Record<LocationErrorReason, string> = {
+  'permission-denied':
+    'Location access was denied. Allow location access to use your current location.',
+  'permission-blocked':
+    'Location access is blocked for this app. Enable it from Settings to use your current location.',
+  'services-disabled':
+    'Location services are turned off on your device. Turn them on in Settings to use your current location.',
+  unavailable:
+    "We couldn't get a location fix. Check your device's location settings and try again.",
+};
+
+const isBlocked = (reason: LocationErrorReason) => reason === 'permission-blocked';
 
 export default function LocationConfirmScreen() {
   const { colors } = useTheme();
@@ -24,26 +46,51 @@ export default function LocationConfirmScreen() {
   const resetFlow = useOnboardingFlowStore((s) => s.reset);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const [phase, setPhase] = useState<Phase>('fetching');
+  const [errorReason, setErrorReason] = useState<LocationErrorReason>('unavailable');
+  const isMountedRef = useRef(true);
 
-  useEffect(() => {
-    let cancelled = false;
+  useEffect(
+    () => () => {
+      isMountedRef.current = false;
+    },
+    [],
+  );
 
-    async function resolve() {
-      if (address) {
-        await wait(400);
-      } else {
-        const resolved = await mockFetchCurrentLocation();
-        if (cancelled) return;
-        setAddress(resolved);
-      }
-      if (cancelled) return;
-      setPhase('confirmed');
+  const resolveLocation = useCallback(async () => {
+    setPhase('fetching');
+
+    if (address) {
+      log.info('Address already in store, skipping GPS fetch', address);
+      await wait(400);
+      if (isMountedRef.current) setPhase('confirmed');
+      return;
     }
 
-    resolve();
-    return () => {
-      cancelled = true;
-    };
+    log.info('Starting location resolve…');
+    try {
+      const coordinates = await getCurrentCoordinates();
+      if (!isMountedRef.current) return;
+
+      log.info('Resolving mock address for display…');
+      const resolved = await mockFetchCurrentLocation();
+      if (!isMountedRef.current) return;
+
+      const finalAddress = { ...resolved, coordinates };
+      log.info('Location resolved', finalAddress);
+      setAddress(finalAddress);
+      setPhase('confirmed');
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      const reason = err instanceof LocationError ? err.reason : 'unavailable';
+      log.error(`Location resolve failed (${reason})`, err);
+      setErrorReason(reason);
+      setPhase('error');
+    }
+  }, [address, setAddress]);
+
+  useEffect(() => {
+    resolveLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -68,6 +115,39 @@ export default function LocationConfirmScreen() {
             <Text style={[styles.fetchingLabel, { color: colors.inkMuted }]}>
               Fetching your location...
             </Text>
+          </>
+        ) : phase === 'error' ? (
+          <>
+            <View style={[styles.confirmedIcon, { backgroundColor: colors.disabledBg }]}>
+              <MapPin size={26} color={colors.inkMuted} strokeWidth={2.4} />
+            </View>
+            <Text style={[styles.confirmedLabel, { color: colors.ink }]}>
+              Couldn't get your location
+            </Text>
+            <Text style={[styles.errorSubtitle, { color: colors.inkMuted }]}>
+              {ERROR_COPY[errorReason]}
+            </Text>
+            <View style={styles.errorActions}>
+              {isBlocked(errorReason) ? (
+                <Button label="Enable in Settings" onPress={openLocationSettings} />
+              ) : (
+                <Button label="Try again" onPress={resolveLocation} />
+              )}
+              <Button
+                label="Enter address manually"
+                variant="secondary"
+                onPress={() => router.replace('/(onboarding)/location-manual')}
+              />
+              {isBlocked(errorReason) ? (
+                <Pressable
+                  onPress={resolveLocation}
+                  hitSlop={8}
+                  style={({ pressed }) => pressed && styles.retryPressed}
+                >
+                  <Text style={[styles.retryLabel, { color: colors.ink }]}>Try Again</Text>
+                </Pressable>
+              ) : null}
+            </View>
           </>
         ) : (
           <>
@@ -160,4 +240,13 @@ const styles = StyleSheet.create({
   confirmedLabel: { fontSize: 14, marginTop: spacing.sm },
   confirmedTitle: { fontSize: 24, fontWeight: '700' },
   confirmedSubtitle: { fontSize: 14 },
+  errorSubtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center' },
+  errorActions: { width: '100%', gap: spacing.sm, marginTop: spacing.sm, alignItems: 'center' },
+  retryLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+    marginTop: spacing.xs,
+  },
+  retryPressed: { opacity: 0.6 },
 });

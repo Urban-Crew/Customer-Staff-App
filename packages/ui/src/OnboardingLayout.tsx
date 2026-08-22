@@ -8,27 +8,18 @@ import { IconButton } from './IconButton';
 import { spacing, useTheme } from './theme';
 
 export interface OnboardingLayoutProps {
-  icon?: ReactNode;
   title: string;
   description?: ReactNode;
   onBack?: () => void;
   onSkip?: () => void;
   children?: ReactNode;
-  /** Text/links shown above the primary action, e.g. "By continuing, you agree to…" */
   footnote?: ReactNode;
-  /** Primary CTA. Omit to render a fully custom `footer` instead. */
   primaryAction?: ButtonProps;
   footer?: ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
-/**
- * Plain, flat page scaffold for the onboarding flow: white background, single-tone
- * borders, no gradients or shadows. Content scrolls in the middle; the primary
- * action stays docked to the bottom.
- */
 export function OnboardingLayout({
-  icon,
   title,
   description,
   onBack,
@@ -47,7 +38,6 @@ export function OnboardingLayout({
       edges={['top', 'bottom']}
     >
       <KeyboardAvoidingView style={styles.flex} behavior="padding">
-        {/* Top navigation row */}
         <View style={styles.topNav}>
           <View style={styles.navLeft}>
             {onBack ? (
@@ -78,7 +68,6 @@ export function OnboardingLayout({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {icon ? <View style={styles.iconWrap}>{icon}</View> : null}
           <Text style={[styles.title, { color: colors.ink }]}>{title}</Text>
           {description ? (
             <Text style={[styles.description, { color: colors.inkMuted }]}>{description}</Text>
@@ -86,7 +75,6 @@ export function OnboardingLayout({
           {children ? <View style={styles.body}>{children}</View> : null}
         </ScrollView>
 
-        {/* Bottom Action Footer */}
         {footer || footnote || primaryAction ? (
           <View style={styles.footer}>
             {footer ?? (
@@ -129,16 +117,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   navSpacer: { width: 40, height: 40 },
-  iconWrap: {
-    marginBottom: spacing.md,
-  },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '700',
     letterSpacing: -0.3,
   },
   description: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 22,
     marginTop: spacing.sm,
   },

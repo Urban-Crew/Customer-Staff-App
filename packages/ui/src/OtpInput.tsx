@@ -15,18 +15,25 @@ export interface OtpInputProps {
   value: string;
   onChangeText: (value: string) => void;
   autoFocus?: boolean;
+  editable?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-/** 6-box OTP field with plain outlined tiles and SMS autofill support. */
-export function OtpInput({ length = 6, value, onChangeText, autoFocus, style }: OtpInputProps) {
+export function OtpInput({
+  length = 6,
+  value,
+  onChangeText,
+  autoFocus,
+  editable = true,
+  style,
+}: OtpInputProps) {
   const { colors } = useTheme();
   const inputRef = useRef<TextInput>(null);
   const [focused, setFocused] = useState(false);
   const activeIndex = Math.min(value.length, length - 1);
 
   return (
-    <Pressable style={[styles.row, style]} onPress={() => inputRef.current?.focus()}>
+    <Pressable style={[styles.row, style]} onPress={() => editable && inputRef.current?.focus()}>
       {Array.from({ length }).map((_, index) => {
         const isCurrent = focused && index === activeIndex;
         const hasVal = Boolean(value[index]);
@@ -58,6 +65,7 @@ export function OtpInput({ length = 6, value, onChangeText, autoFocus, style }: 
         autoComplete="sms-otp"
         maxLength={length}
         autoFocus={autoFocus}
+        editable={editable}
         caretHidden
         style={styles.hiddenInput}
       />
@@ -68,14 +76,14 @@ export function OtpInput({ length = 6, value, onChangeText, autoFocus, style }: 
 const BOX_SIZE = 48;
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 10, justifyContent: 'space-between' },
+  row: { flexDirection: 'row', gap: 2, justifyContent: 'space-between' },
   box: {
     width: BOX_SIZE,
     height: BOX_SIZE + 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  digit: { fontSize: 22, fontWeight: '700' },
+  digit: { fontSize: 20, fontWeight: '700' },
   hiddenInput: {
     position: 'absolute',
     opacity: 0,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { Clock, Smartphone } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { Clock } from 'lucide-react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Button, OnboardingLayout, OtpInput, useTheme } from '@ub/ui';
 import { mockSendOtp, mockVerifyOtp } from '../../lib/onboardingMock';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
@@ -59,7 +59,6 @@ export default function OtpScreen() {
 
   return (
     <OnboardingLayout
-      icon={<Smartphone size={26} color={colors.ink} />}
       title="Enter verification code"
       onBack={() => router.back()}
       description={
@@ -71,8 +70,15 @@ export default function OtpScreen() {
         </>
       }
     >
-      <OtpInput value={otp} onChangeText={setOtp} autoFocus />
-      {error ? <Text style={styles.error}>That code didn't work — try again.</Text> : null}
+      <OtpInput value={otp} onChangeText={setOtp} autoFocus editable={!submitting} />
+      {submitting ? (
+        <View style={styles.verifyingRow}>
+          <ActivityIndicator size="small" color={colors.ink} />
+          <Text style={[styles.verifyingLabel, { color: colors.inkMuted }]}>Verifying...</Text>
+        </View>
+      ) : error ? (
+        <Text style={styles.error}>That code didn't work — try again.</Text>
+      ) : null}
 
       {secondsLeft > 0 ? (
         <View style={styles.timerRow}>
@@ -89,6 +95,7 @@ export default function OtpScreen() {
               size="sm"
               fullWidth={false}
               onPress={handleResend}
+              disabled={submitting}
             />
             <Button
               label="WhatsApp"
@@ -96,6 +103,7 @@ export default function OtpScreen() {
               size="sm"
               fullWidth={false}
               onPress={handleResend}
+              disabled={submitting}
             />
           </View>
         </View>
@@ -107,6 +115,8 @@ export default function OtpScreen() {
 const styles = StyleSheet.create({
   phone: { fontWeight: '700' },
   error: { fontSize: 13, color: '#EF4444' },
+  verifyingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  verifyingLabel: { fontSize: 13 },
   timerRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   timerLabel: { fontSize: 14 },
   resendBlock: { gap: 12 },

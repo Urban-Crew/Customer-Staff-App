@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { Linking, Text } from 'react-native';
-import { Phone } from 'lucide-react-native';
-import { OnboardingLayout, PhoneInput, useTheme } from '@ub/ui';
+import { OnboardingLayout, PhoneInput } from '@ub/ui';
 import { mockSendOtp } from '../../lib/onboardingMock';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
 
-// TODO: point these at the real hosted T&C / Privacy Policy pages.
 const TERMS_URL = 'https://ubcrew.in/terms';
 const PRIVACY_URL = 'https://ubcrew.in/privacy';
 
 export default function PhoneScreen() {
-  const { colors } = useTheme();
   const countryCode = useOnboardingFlowStore((s) => s.countryCode);
   const phone = useOnboardingFlowStore((s) => s.phone);
   const setCountryCode = useOnboardingFlowStore((s) => s.setCountryCode);
@@ -42,7 +39,6 @@ export default function PhoneScreen() {
 
   return (
     <OnboardingLayout
-      icon={<Phone size={26} color={colors.ink} />}
       title="Enter your phone number"
       description="We'll send you a text with a verification code."
       onSkip={handleSkip}
@@ -66,7 +62,7 @@ export default function PhoneScreen() {
         </>
       }
       primaryAction={{
-        label: 'Continue',
+        label: 'Send OTP',
         onPress: handleContinue,
         disabled: !canContinue,
         loading: submitting,
