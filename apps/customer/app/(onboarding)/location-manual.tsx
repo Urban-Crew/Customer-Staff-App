@@ -1,0 +1,170 @@
+import { useMemo, useState } from 'react';
+import { router } from 'expo-router';
+import { ChevronLeft, Lightbulb, LocateFixed, MapPin } from 'lucide-react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { IconButton, radii, spacing, useTheme } from '@ub/ui';
+import type { PlaceSuggestion } from '@ub/shared-types';
+import { mockResolvePlace, mockSearchPlaces } from '../../lib/onboardingMock';
+import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
+
+export default function LocationManualScreen() {
+  const { colors } = useTheme();
+  const [query, setQuery] = useState('');
+  const setAddress = useOnboardingFlowStore((s) => s.setAddress);
+
+  const suggestions = useMemo(() => mockSearchPlaces(query), [query]);
+
+  const handleSelect = async (suggestion: PlaceSuggestion) => {
+    const address = await mockResolvePlace(suggestion.placeId);
+    setAddress(address);
+    router.push('/(onboarding)/location-confirm');
+  };
+
+  const handleUseCurrentLocation = () => {
+    router.push('/(onboarding)/location-confirm');
+  };
+
+  return (
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.topBar, { backgroundColor: colors.primary }]} edges={['top']}>
+        <View style={styles.topBarRow}>
+          <IconButton variant="plain" onPress={() => router.back()}>
+            <ChevronLeft size={24} color="#fff" />
+          </IconButton>
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Enter address (some tips below)"
+            placeholderTextColor="rgba(255,255,255,0.5)"
+            style={styles.searchInput}
+            autoFocus
+          />
+        </View>
+        <View style={styles.tipBanner}>
+          <Lightbulb size={14} color="#fff" />
+          <Text style={styles.tipText}>Enter your building name or street for best results</Text>
+        </View>
+      </SafeAreaView>
+
+      {query.trim().length === 0 ? (
+        <View style={styles.emptyState}>
+          <View style={styles.orRow}>
+            <View style={[styles.orLine, { backgroundColor: colors.hairline }]} />
+            <Text style={[styles.orLabel, { color: colors.inkMuted }]}>Or</Text>
+            <View style={[styles.orLine, { backgroundColor: colors.hairline }]} />
+          </View>
+          <Pressable
+            style={({ pressed }) => [
+              styles.currentLocationRow,
+              { backgroundColor: colors.secondaryBg, borderColor: colors.secondaryBorder },
+              pressed && styles.pressed,
+            ]}
+            onPress={handleUseCurrentLocation}
+          >
+            <LocateFixed size={18} color={colors.ink} />
+            <Text style={[styles.currentLocationLabel, { color: colors.ink }]}>
+              Use my current location
+            </Text>
+          </Pressable>
+        </View>
+      ) : (
+        <ScrollView style={styles.results} keyboardShouldPersistTaps="handled">
+          {suggestions.length > 0 ? (
+            <Text style={[styles.sectionLabel, { color: colors.inkFaint }]}>Singapore</Text>
+          ) : null}
+          {suggestions.map((suggestion) => (
+            <Pressable
+              key={suggestion.placeId}
+              style={({ pressed }) => [
+                styles.resultRow,
+                { borderBottomColor: colors.hairline },
+                pressed && styles.pressed,
+              ]}
+              onPress={() => handleSelect(suggestion)}
+            >
+              <MapPin size={18} color={colors.ink} />
+              <View style={styles.resultTextBlock}>
+                <Text style={[styles.resultPrimary, { color: colors.ink }]}>
+                  {suggestion.primaryText}
+                </Text>
+                <Text style={[styles.resultSecondary, { color: colors.inkMuted }]}>
+                  {suggestion.secondaryText}
+                </Text>
+              </View>
+            </Pressable>
+          ))}
+          {suggestions.length === 0 ? (
+            <Text style={[styles.noResults, { color: colors.inkMuted }]}>
+              No matches yet — keep typing.
+            </Text>
+          ) : null}
+        </ScrollView>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+  topBar: {},
+  topBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    gap: spacing.xs,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 17,
+    paddingVertical: spacing.md,
+  },
+  tipBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  tipText: { flex: 1, color: 'rgba(255,255,255,0.85)', fontSize: 12 },
+  pressed: { opacity: 0.6 },
+  emptyState: { flex: 1, alignItems: 'center', paddingTop: spacing.xxl, gap: spacing.lg },
+  orRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, width: '80%' },
+  orLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  orLabel: { fontSize: 13 },
+  currentLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderRadius: radii.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    alignSelf: 'stretch',
+    marginHorizontal: spacing.lg,
+    justifyContent: 'center',
+  },
+  currentLocationLabel: { fontSize: 15, fontWeight: '600' },
+  results: { flex: 1 },
+  sectionLabel: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xs,
+  },
+  resultRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  resultTextBlock: { flex: 1 },
+  resultPrimary: { fontSize: 15, fontWeight: '600' },
+  resultSecondary: { fontSize: 13, marginTop: 2 },
+  noResults: { padding: spacing.lg, fontSize: 14 },
+});

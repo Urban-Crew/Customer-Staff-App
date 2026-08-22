@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createApiClient } from '@ub/api-client';
+import { createApiClient, createOnboardingApi } from '@ub/api-client';
 import type { AuthTokens } from '@ub/shared-types';
 import { secureTokenStorage } from './tokenStorage';
 
@@ -30,3 +30,10 @@ export const apiClient = createApiClient({
     authFailureListener?.();
   },
 });
+
+/**
+ * Typed phone/OTP/email/location endpoints — not called anywhere yet since
+ * the backend doesn't implement them. The onboarding screens run on local
+ * mock state (see lib/onboardingMock.ts) until these are wired in.
+ */
+export const onboardingApi = createOnboardingApi(apiClient);

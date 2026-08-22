@@ -28,7 +28,8 @@
       "expo-status-bar",
       "expo-splash-screen",
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true
