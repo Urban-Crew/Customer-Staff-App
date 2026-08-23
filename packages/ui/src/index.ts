@@ -8,4 +8,5 @@ export * from './OnboardingLayout';
 export * from './OtpInput';
 export * from './PhoneInput';
 export * from './SplashScreen';
+export * from './Text';
 export * from './theme';

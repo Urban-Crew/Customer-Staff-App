@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { Check, MapPin } from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -21,6 +21,7 @@ import {
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
 import { createLogger } from '../../lib/logger';
+import { Text } from '../../components';
 
 const log = createLogger('LocationConfirmScreen');
 
@@ -157,7 +158,13 @@ export default function LocationConfirmScreen() {
             <Text style={[styles.confirmedLabel, { color: colors.inkMuted }]}>
               Delivering service at
             </Text>
-            <Text style={[styles.confirmedTitle, { color: colors.ink }]}>{address?.shortLine}</Text>
+            <Text
+              variant="heading"
+              fontWeight="700"
+              style={[styles.confirmedTitle, { color: colors.ink }]}
+            >
+              {address?.shortLine}
+            </Text>
             <Text style={[styles.confirmedSubtitle, { color: colors.inkMuted }]}>
               {address ? `${address.country} ${address.postalCode}` : ''}
             </Text>
@@ -238,7 +245,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   confirmedLabel: { fontSize: 14, marginTop: spacing.sm },
-  confirmedTitle: { fontSize: 24, fontWeight: '700' },
+  confirmedTitle: { fontSize: 24 },
   confirmedSubtitle: { fontSize: 14 },
   errorSubtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center' },
   errorActions: { width: '100%', gap: spacing.sm, marginTop: spacing.sm, alignItems: 'center' },

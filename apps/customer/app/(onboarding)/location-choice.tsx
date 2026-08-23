@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
 import { MapPin } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, spacing, useTheme } from '@ub/ui';
+import { Text } from '../../components';
 
 export default function LocationChoiceScreen() {
   const { colors } = useTheme();
@@ -15,7 +16,9 @@ export default function LocationChoiceScreen() {
       <View style={styles.content}>
         <View style={styles.body}>
           <MapPin size={32} color={colors.ink} />
-          <Text style={[styles.title, { color: colors.ink }]}>Where do you want your service?</Text>
+          <Text variant="heading" fontWeight="700" style={[styles.title, { color: colors.ink }]}>
+            Where do you want your service?
+          </Text>
           <Text style={[styles.subtitle, { color: colors.inkMuted }]}>
             Set your location to see available services and verified staff in your area.
           </Text>
@@ -58,7 +61,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingTop: spacing.xxl,
   },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', letterSpacing: -0.3 },
+  title: { fontSize: 24, textAlign: 'center', letterSpacing: -0.3 },
   subtitle: { fontSize: 15, lineHeight: 22, textAlign: 'center' },
   footer: { gap: spacing.md },
 });

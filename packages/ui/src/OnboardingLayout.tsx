@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { Button, type ButtonProps } from './Button';
 import { IconButton } from './IconButton';
+import { Text } from './Text';
 import { spacing, useTheme } from './theme';
 
 export interface OnboardingLayoutProps {
@@ -68,7 +69,9 @@ export function OnboardingLayout({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={[styles.title, { color: colors.ink }]}>{title}</Text>
+          <Text variant="heading" fontWeight="700" style={[styles.title, { color: colors.ink }]}>
+            {title}
+          </Text>
           {description ? (
             <Text style={[styles.description, { color: colors.inkMuted }]}>{description}</Text>
           ) : null}
@@ -119,7 +122,6 @@ const styles = StyleSheet.create({
   navSpacer: { width: 40, height: 40 },
   title: {
     fontSize: 24,
-    fontWeight: '700',
     letterSpacing: -0.3,
   },
   description: {
