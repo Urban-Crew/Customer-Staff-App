@@ -60,12 +60,12 @@ export function Button({
         fullWidth && styles.fullWidth,
         dynamicVariantStyle,
 
-        isPrimary && (isDisabled || loading) && { backgroundColor: colors.primaryPressed },
-        !isPrimary &&
-          isDisabled && {
+        isPrimary && loading && { backgroundColor: colors.primaryPressed },
+        isDisabled &&
+          !loading && {
             backgroundColor: colors.disabledBg,
             borderColor: colors.disabledBorder,
-            borderWidth: isSecondary ? 1 : 0,
+            borderWidth: isPrimary || isSecondary ? 1 : 0,
           },
         pressed &&
           !isDisabled &&
@@ -89,12 +89,11 @@ export function Button({
               styles.label,
               isSm && styles.labelSm,
               {
-                color:
-                  !isPrimary && isDisabled
-                    ? colors.disabledText
-                    : isPrimary
-                      ? colors.primaryText
-                      : colors.secondaryText,
+                color: isDisabled
+                  ? colors.disabledText
+                  : isPrimary
+                    ? colors.primaryText
+                    : colors.secondaryText,
               },
               labelStyle,
             ]}

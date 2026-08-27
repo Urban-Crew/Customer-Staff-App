@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { router } from 'expo-router';
 import { Linking, Text } from 'react-native';
 import { OnboardingLayout, PhoneInput } from '@ub/ui';
-import { mockSendOtp } from '../../lib/onboardingMock';
+import { describeOtpError, toE164 } from '../../lib/otp';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
+import { useSendOtp } from '../../services/otp.service';
 
 const TERMS_URL = 'https://ubcrew.in/terms';
 const PRIVACY_URL = 'https://ubcrew.in/privacy';
@@ -14,22 +14,23 @@ export default function PhoneScreen() {
   const phone = useOnboardingFlowStore((s) => s.phone);
   const setCountryCode = useOnboardingFlowStore((s) => s.setCountryCode);
   const setPhone = useOnboardingFlowStore((s) => s.setPhone);
-  const setRequestId = useOnboardingFlowStore((s) => s.setRequestId);
+  const setOtpRequest = useOnboardingFlowStore((s) => s.setOtpRequest);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
-  const [submitting, setSubmitting] = useState(false);
+  const sendOtp = useSendOtp();
 
   const canContinue = phone.trim().length >= 7;
 
-  const handleContinue = async () => {
-    if (!canContinue || submitting) return;
-    setSubmitting(true);
-    try {
-      const { requestId } = await mockSendOtp();
-      setRequestId(requestId);
-      router.push('/(onboarding)/otp');
-    } finally {
-      setSubmitting(false);
-    }
+  const handleContinue = () => {
+    if (!canContinue || sendOtp.isPending) return;
+    sendOtp.mutate(
+      { phone: toE164(countryCode, phone) },
+      {
+        onSuccess: ({ requestId, resendAvailableInSeconds }) => {
+          setOtpRequest(requestId, resendAvailableInSeconds);
+          router.push('/(onboarding)/otp');
+        },
+      },
+    );
   };
 
   const handleSkip = async () => {
@@ -65,7 +66,7 @@ export default function PhoneScreen() {
         label: 'Send OTP',
         onPress: handleContinue,
         disabled: !canContinue,
-        loading: submitting,
+        loading: sendOtp.isPending,
       }}
     >
       <PhoneInput
@@ -75,6 +76,9 @@ export default function PhoneScreen() {
         onChangeText={setPhone}
         autoFocus
       />
+      {sendOtp.error ? (
+        <Text style={{ fontSize: 13, color: '#EF4444' }}>{describeOtpError(sendOtp.error)}</Text>
+      ) : null}
     </OnboardingLayout>
   );
 }

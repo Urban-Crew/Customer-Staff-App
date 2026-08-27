@@ -1,23 +1,27 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { Clock } from 'lucide-react-native';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Button, OnboardingLayout, OtpInput, useTheme } from '@ub/ui';
-import { mockSendOtp, mockVerifyOtp } from '../../lib/onboardingMock';
+import type { OtpChannel } from '@ub/shared-types';
+import { describeOtpError, toE164 } from '../../lib/otp';
+import { useAuthStore } from '../../lib/store/authStore';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
-
-const RESEND_SECONDS = 30;
+import { useResendOtp, useVerifyOtp } from '../../services/otp.service';
 
 export default function OtpScreen() {
   const { colors } = useTheme();
   const countryCode = useOnboardingFlowStore((s) => s.countryCode);
   const phone = useOnboardingFlowStore((s) => s.phone);
-  const setRequestId = useOnboardingFlowStore((s) => s.setRequestId);
+  const requestId = useOnboardingFlowStore((s) => s.requestId);
+  const resendAvailableInSeconds = useOnboardingFlowStore((s) => s.resendAvailableInSeconds);
+  const setOtpRequest = useOnboardingFlowStore((s) => s.setOtpRequest);
+  const setSession = useAuthStore((s) => s.setSession);
 
   const [otp, setOtp] = useState('');
-  const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(resendAvailableInSeconds);
+  const verifyOtp = useVerifyOtp();
+  const resendOtp = useResendOtp();
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
@@ -25,42 +29,56 @@ export default function OtpScreen() {
     return () => clearInterval(timer);
   }, [secondsLeft]);
 
-  useEffect(() => {
-    if (otp.length !== 6 || submitting) return;
+  const canVerify = otp.length === 6 && !!requestId;
 
-    let cancelled = false;
-    setSubmitting(true);
-    setError(false);
-    mockVerifyOtp(otp).then((valid) => {
-      if (cancelled) return;
-      setSubmitting(false);
-      if (valid) {
-        router.push('/(onboarding)/email');
-      } else {
-        setError(true);
-        setOtp('');
-      }
-    });
+  const handleVerify = () => {
+    if (!canVerify || verifyOtp.isPending) return;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [otp]);
-
-  const handleResend = async () => {
-    setOtp('');
-    setError(false);
-    setSecondsLeft(RESEND_SECONDS);
-    const { requestId } = await mockSendOtp();
-    setRequestId(requestId);
+    verifyOtp.mutate(
+      { phone: toE164(countryCode, phone), requestId: requestId!, otp },
+      {
+        onSuccess: async ({ user, tokens, isNewUser }) => {
+          await setSession(user, tokens, isNewUser);
+          // New accounts don't have an email yet — collect it before location.
+          // Returning users skip straight to location, which is always asked.
+          router.push(isNewUser ? '/(onboarding)/email' : '/(onboarding)/location-choice');
+        },
+        onError: () => {
+          setOtp('');
+        },
+      },
+    );
   };
 
-  const timerLabel = `00:${String(secondsLeft).padStart(2, '0')}`;
+  const handleResend = (channel: OtpChannel) => {
+    if (!requestId || resendOtp.isPending) return;
+    setOtp('');
+    verifyOtp.reset();
+    resendOtp.mutate(
+      { requestId, channel },
+      {
+        onSuccess: (result) => {
+          setOtpRequest(result.requestId, result.resendAvailableInSeconds);
+          setSecondsLeft(result.resendAvailableInSeconds);
+        },
+      },
+    );
+  };
+
+  const timerLabel = `00:${String(Math.max(secondsLeft, 0)).padStart(2, '0')}`;
+  const busy = verifyOtp.isPending || resendOtp.isPending;
+  const error = verifyOtp.error ?? resendOtp.error;
 
   return (
     <OnboardingLayout
       title="Enter verification code"
       onBack={() => router.back()}
+      primaryAction={{
+        label: 'Verify OTP',
+        onPress: handleVerify,
+        disabled: !canVerify,
+        loading: verifyOtp.isPending,
+      }}
       description={
         <>
           A 6-digit verification code has been sent to{'\n'}
@@ -70,15 +88,8 @@ export default function OtpScreen() {
         </>
       }
     >
-      <OtpInput value={otp} onChangeText={setOtp} autoFocus editable={!submitting} />
-      {submitting ? (
-        <View style={styles.verifyingRow}>
-          <ActivityIndicator size="small" color={colors.ink} />
-          <Text style={[styles.verifyingLabel, { color: colors.inkMuted }]}>Verifying...</Text>
-        </View>
-      ) : error ? (
-        <Text style={styles.error}>That code didn't work — try again.</Text>
-      ) : null}
+      <OtpInput value={otp} onChangeText={setOtp} autoFocus editable={!busy} />
+      {error ? <Text style={styles.error}>{describeOtpError(error)}</Text> : null}
 
       {secondsLeft > 0 ? (
         <View style={styles.timerRow}>
@@ -94,16 +105,18 @@ export default function OtpScreen() {
               variant="secondary"
               size="sm"
               fullWidth={false}
-              onPress={handleResend}
-              disabled={submitting}
+              onPress={() => handleResend('sms')}
+              disabled={busy}
+              loading={resendOtp.isPending && resendOtp.variables?.channel === 'sms'}
             />
             <Button
               label="WhatsApp"
               variant="secondary"
               size="sm"
               fullWidth={false}
-              onPress={handleResend}
-              disabled={submitting}
+              onPress={() => handleResend('wapp')}
+              disabled={busy}
+              loading={resendOtp.isPending && resendOtp.variables?.channel === 'wapp'}
             />
           </View>
         </View>
@@ -115,8 +128,6 @@ export default function OtpScreen() {
 const styles = StyleSheet.create({
   phone: { fontWeight: '700' },
   error: { fontSize: 13, color: '#EF4444' },
-  verifyingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  verifyingLabel: { fontSize: 13 },
   timerRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   timerLabel: { fontSize: 14 },
   resendBlock: { gap: 12 },

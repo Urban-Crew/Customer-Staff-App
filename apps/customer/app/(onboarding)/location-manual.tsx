@@ -1,24 +1,44 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { router } from 'expo-router';
 import { ChevronLeft, Lightbulb, LocateFixed, MapPin } from 'lucide-react-native';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconButton, radii, spacing, useTheme } from '@ub/ui';
 import type { PlaceSuggestion } from '@ub/shared-types';
-import { mockResolvePlace, mockSearchPlaces } from '../../lib/onboardingMock';
+import {
+  describeLocationError,
+  usePlacesAutocomplete,
+  useResolvePlace,
+} from '../../services/location.service';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 
 export default function LocationManualScreen() {
   const { colors } = useTheme();
   const [query, setQuery] = useState('');
   const setAddress = useOnboardingFlowStore((s) => s.setAddress);
+  const { suggestions, isSearching, error, sessionToken, resetSession } =
+    usePlacesAutocomplete(query);
+  const resolvePlace = useResolvePlace();
 
-  const suggestions = useMemo(() => mockSearchPlaces(query), [query]);
-
-  const handleSelect = async (suggestion: PlaceSuggestion) => {
-    const address = await mockResolvePlace(suggestion.placeId);
-    setAddress(address);
-    router.push('/(onboarding)/location-confirm');
+  const handleSelect = (suggestion: PlaceSuggestion) => {
+    resolvePlace.mutate(
+      { placeId: suggestion.placeId, sessionToken },
+      {
+        onSuccess: (address) => {
+          setAddress(address);
+          resetSession();
+          router.push('/(onboarding)/location-confirm');
+        },
+      },
+    );
   };
 
   const handleUseCurrentLocation = () => {
@@ -70,9 +90,6 @@ export default function LocationManualScreen() {
         </View>
       ) : (
         <ScrollView style={styles.results} keyboardShouldPersistTaps="handled">
-          {suggestions.length > 0 ? (
-            <Text style={[styles.sectionLabel, { color: colors.inkFaint }]}>Singapore</Text>
-          ) : null}
           {suggestions.map((suggestion) => (
             <Pressable
               key={suggestion.placeId}
@@ -81,6 +98,7 @@ export default function LocationManualScreen() {
                 { borderBottomColor: colors.hairline },
                 pressed && styles.pressed,
               ]}
+              disabled={resolvePlace.isPending}
               onPress={() => handleSelect(suggestion)}
             >
               <MapPin size={18} color={colors.ink} />
@@ -94,7 +112,13 @@ export default function LocationManualScreen() {
               </View>
             </Pressable>
           ))}
-          {suggestions.length === 0 ? (
+          {isSearching ? (
+            <ActivityIndicator style={styles.statusRow} size="small" color={colors.ink} />
+          ) : error ? (
+            <Text style={[styles.noResults, { color: colors.error }]}>
+              {describeLocationError(error)}
+            </Text>
+          ) : suggestions.length === 0 ? (
             <Text style={[styles.noResults, { color: colors.inkMuted }]}>
               No matches yet — keep typing.
             </Text>
@@ -148,13 +172,7 @@ const styles = StyleSheet.create({
   },
   currentLocationLabel: { fontSize: 15, fontWeight: '600' },
   results: { flex: 1 },
-  sectionLabel: {
-    fontSize: 12,
-    textTransform: 'uppercase',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xs,
-  },
+  statusRow: { paddingVertical: spacing.lg },
   resultRow: {
     flexDirection: 'row',
     alignItems: 'center',

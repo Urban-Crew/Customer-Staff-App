@@ -1,21 +1,26 @@
 import { create } from 'zustand';
-import type { AuthUser, LoginResponse } from '@ub/shared-types';
+import type { AuthUser, LoginResponse, OtpAuthTokens, OtpAuthUser } from '@ub/shared-types';
 import { apiClient, setAuthFailureListener } from '../apiClient';
 import { secureTokenStorage } from '../tokenStorage';
 
 interface AuthState {
-  user: AuthUser | null;
+  user: AuthUser | OtpAuthUser | null;
   isAuthenticated: boolean;
+  /** Echoes verify-otp's `isNewUser` for the session just started — false once logged out. */
+  isNewUser: boolean;
   /** True until we've checked SecureStore for an existing session. */
   isHydrating: boolean;
   hydrate: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
+  /** Persists the session issued by POST /auth/client/verify-otp and marks the user signed in. */
+  setSession: (user: OtpAuthUser, tokens: OtpAuthTokens, isNewUser: boolean) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
+  isNewUser: false,
   isHydrating: true,
 
   hydrate: async () => {
@@ -32,9 +37,20 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: data.user, isAuthenticated: true });
   },
 
+  setSession: async (user, tokens, isNewUser) => {
+    // The OTP endpoints return `expiresIn` (seconds from issuance); stored
+    // tokens carry an absolute `expiresAt` instead, so convert once here.
+    await secureTokenStorage.setTokens({
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresAt: Date.now() + tokens.expiresIn * 1000,
+    });
+    set({ user, isAuthenticated: true, isNewUser });
+  },
+
   logout: async () => {
     await secureTokenStorage.setTokens(null);
-    set({ user: null, isAuthenticated: false });
+    set({ user: null, isAuthenticated: false, isNewUser: false });
   },
 }));
 

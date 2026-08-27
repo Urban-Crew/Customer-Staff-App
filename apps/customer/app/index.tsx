@@ -1,17 +1,18 @@
-import { useEffect, useRef } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Redirect } from 'expo-router';
-import { Sparkles } from 'lucide-react-native';
-import { TrueSheet } from '@lodev09/react-native-true-sheet';
-import { Badge, Button, GlassBackdrop, SplashScreen, useTheme } from '@ub/ui';
+import { useEffect } from 'react';
+import { router, Redirect } from 'expo-router';
+import { Search, UserRound } from 'lucide-react-native';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { IconButton, Input, SplashScreen, spacing, useTheme } from '@ub/ui';
+import { useAuthStore } from '../lib/store/authStore';
 import { useOnboardingStore } from '../lib/store/onboardingStore';
 
 export default function HomeScreen() {
   const { colors } = useTheme();
-  const sheet = useRef<TrueSheet>(null);
   const hasOnboarded = useOnboardingStore((s) => s.hasOnboarded);
   const isOnboardingHydrating = useOnboardingStore((s) => s.isHydrating);
   const hydrateOnboarding = useOnboardingStore((s) => s.hydrate);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   useEffect(() => {
     hydrateOnboarding();
@@ -21,43 +22,43 @@ export default function HomeScreen() {
     return <SplashScreen logo={require('../assets/splash-icon.png')} loading />;
   }
 
-  if (!hasOnboarded) {
+  // Onboarding also covers phone/OTP login, so an incomplete session sends
+  // the user back there whether they've never onboarded or have logged out.
+  if (!hasOnboarded || !isAuthenticated) {
     return <Redirect href="/(onboarding)/phone" />;
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <GlassBackdrop />
-      <Badge icon={<Sparkles size={20} color={colors.primaryText} />} label="Customer app" />
-      <Text style={[styles.hint, { color: colors.inkMuted }]}>
-        Open up app/index.tsx to start working on it!
-      </Text>
-      <Button label="Open sheet" onPress={() => sheet.current?.present()} />
-
-      <TrueSheet
-        ref={sheet}
-        detents={['auto', 0.6, 1]}
-        style={[styles.sheetContent, { backgroundColor: colors.surface }]}
-      >
-        <Text style={[styles.sheetTitle, { color: colors.ink }]}>A true native bottom sheet</Text>
-        <Button label="Close" variant="secondary" onPress={() => sheet.current?.dismiss()} />
-      </TrueSheet>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <View style={[styles.hero, { backgroundColor: colors.primary }]}>
+        <SafeAreaView edges={['top']}>
+          <View style={styles.navRow}>
+            <Input
+              style={styles.searchInput}
+              placeholder="Search"
+              left={<Search size={18} color={colors.inkFaint} />}
+            />
+            <IconButton variant="plain" onPress={() => router.push('/profile')}>
+              <UserRound size={22} color="#fff" />
+            </IconButton>
+          </View>
+        </SafeAreaView>
+      </View>
+      <View style={styles.body} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  root: { flex: 1 },
+  hero: { height: '40%' },
+  navRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    padding: 24,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
   },
-  hint: { fontSize: 14 },
-  sheetContent: {
-    padding: 24,
-    gap: 16,
-  },
-  sheetTitle: { fontSize: 16, fontWeight: '600' },
+  searchInput: { flex: 1 },
+  body: { flex: 1 },
 });

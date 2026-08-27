@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, spacing, useTheme } from '@ub/ui';
-import { mockFetchCurrentLocation } from '../../lib/onboardingMock';
+import { useReverseGeocode } from '../../services/location.service';
 import {
   getCurrentCoordinates,
   openLocationSettings,
@@ -46,6 +46,7 @@ export default function LocationConfirmScreen() {
   const setAddress = useOnboardingFlowStore((s) => s.setAddress);
   const resetFlow = useOnboardingFlowStore((s) => s.reset);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
+  const reverseGeocode = useReverseGeocode();
   const [phase, setPhase] = useState<Phase>('fetching');
   const [errorReason, setErrorReason] = useState<LocationErrorReason>('unavailable');
   const isMountedRef = useRef(true);
@@ -72,8 +73,11 @@ export default function LocationConfirmScreen() {
       const coordinates = await getCurrentCoordinates();
       if (!isMountedRef.current) return;
 
-      log.info('Resolving mock address for display…');
-      const resolved = await mockFetchCurrentLocation();
+      log.info('Reverse-geocoding for display…');
+      const resolved = await reverseGeocode.mutateAsync({
+        lat: coordinates.latitude,
+        lng: coordinates.longitude,
+      });
       if (!isMountedRef.current) return;
 
       const finalAddress = { ...resolved, coordinates };
@@ -87,7 +91,7 @@ export default function LocationConfirmScreen() {
       setErrorReason(reason);
       setPhase('error');
     }
-  }, [address, setAddress]);
+  }, [address, setAddress, reverseGeocode.mutateAsync]);
 
   useEffect(() => {
     resolveLocation();

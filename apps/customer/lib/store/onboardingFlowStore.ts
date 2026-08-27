@@ -5,11 +5,13 @@ interface OnboardingFlowState {
   countryCode: string;
   phone: string;
   requestId: string | null;
+  /** Seconds to wait before the resend endpoint can be called again, from the last send/resend response. */
+  resendAvailableInSeconds: number;
   email: string;
   address: ResolvedAddress | null;
   setCountryCode: (code: string) => void;
   setPhone: (phone: string) => void;
-  setRequestId: (requestId: string) => void;
+  setOtpRequest: (requestId: string, resendAvailableInSeconds: number) => void;
   setEmail: (email: string) => void;
   setAddress: (address: ResolvedAddress) => void;
   reset: () => void;
@@ -19,6 +21,7 @@ const initial = {
   countryCode: '+91',
   phone: '',
   requestId: null,
+  resendAvailableInSeconds: 30,
   email: '',
   address: null,
 } satisfies Partial<OnboardingFlowState>;
@@ -28,7 +31,8 @@ export const useOnboardingFlowStore = create<OnboardingFlowState>((set) => ({
   ...initial,
   setCountryCode: (countryCode) => set({ countryCode }),
   setPhone: (phone) => set({ phone }),
-  setRequestId: (requestId) => set({ requestId }),
+  setOtpRequest: (requestId, resendAvailableInSeconds) =>
+    set({ requestId, resendAvailableInSeconds }),
   setEmail: (email) => set({ email }),
   setAddress: (address) => set({ address }),
   reset: () => set(initial),

@@ -6,8 +6,29 @@ interface RetriableRequestConfig extends InternalAxiosRequestConfig {
 }
 
 /**
+ * The backend wraps success bodies as `{ success: true, data: T }` (see
+ * @ub/shared-types' `ApiSuccess`) but the docs don't confirm this for every
+ * endpoint, so this only unwraps when that exact shape is present and
+ * otherwise passes the body through unchanged.
+ */
+function unwrapEnvelope(body: unknown): unknown {
+  if (
+    body &&
+    typeof body === 'object' &&
+    'success' in body &&
+    (body as { success: unknown }).success === true &&
+    'data' in body
+  ) {
+    return (body as { data: unknown }).data;
+  }
+  return body;
+}
+
+/**
  * Creates an axios instance wired up with:
  *  - a request interceptor that attaches the stored access token
+ *  - a response interceptor that unwraps the `{ success, data }` envelope
+ *    when present
  *  - a response interceptor that transparently refreshes the token on a
  *    401 and retries the original request exactly once, queueing any
  *    requests that arrive while a refresh is already in flight.
@@ -53,7 +74,10 @@ export function createApiClient(config: ApiClientConfig): AxiosInstance {
   });
 
   client.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      response.data = unwrapEnvelope(response.data);
+      return response;
+    },
     async (error: AxiosError) => {
       const originalRequest = error.config as RetriableRequestConfig | undefined;
 
