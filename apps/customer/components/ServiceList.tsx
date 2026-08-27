@@ -12,26 +12,33 @@ export function ServiceList({ onDark = false }: ServiceListProps) {
   const { colors } = useTheme();
   const { data: services, isLoading } = useServices();
 
-  if (isLoading) {
-    return (
-      <View style={styles.loadingRow}>
-        <ActivityIndicator color={onDark ? '#fff' : colors.primary} />
-      </View>
-    );
-  }
-
-  if (!services?.length) return null;
-
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
-    >
-      {services.map((service) => (
-        <ServiceItem key={service.id} service={service} onDark={onDark} />
-      ))}
-    </ScrollView>
+    <View>
+      <Text
+        variant="heading"
+        fontWeight="700"
+        numberOfLines={1}
+        style={[styles.title, { color: onDark ? '#fff' : colors.ink }]}
+      >
+        Our Services
+      </Text>
+
+      {isLoading ? (
+        <View style={styles.loadingRow}>
+          <ActivityIndicator color={onDark ? '#fff' : colors.primary} />
+        </View>
+      ) : !services?.length ? null : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.row}
+        >
+          {services.map((service) => (
+            <ServiceItem key={service.id} service={service} onDark={onDark} />
+          ))}
+        </ScrollView>
+      )}
+    </View>
   );
 }
 
@@ -49,9 +56,13 @@ function ServiceItem({ service, onDark }: { service: Service; onDark: boolean })
           },
         ]}
       >
-        <Image source={{ uri: service.imageUrl }} style={styles.iconImage} contentFit="contain" />
+        <Image source={{ uri: service.imageUrl }} style={styles.iconImage} contentFit="cover" />
       </View>
-      <Text style={[styles.label, { color: onDark ? '#fff' : colors.ink }]} numberOfLines={1}>
+      <Text
+        style={[styles.label, { color: onDark ? '#fff' : colors.ink }]}
+        fontWeight="600"
+        numberOfLines={1}
+      >
         {service.name}
       </Text>
     </View>
@@ -59,18 +70,24 @@ function ServiceItem({ service, onDark }: { service: Service; onDark: boolean })
 }
 
 const styles = StyleSheet.create({
+  title: {
+    fontSize: 24,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
   row: { paddingHorizontal: spacing.lg, gap: spacing.lg },
   loadingRow: { paddingVertical: spacing.lg, alignItems: 'center' },
   item: { alignItems: 'center', width: 72 },
   iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 76,
+    height: 76,
+    borderRadius: 19,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.05)',
+    gap: 20,
   },
-  iconImage: { width: 32, height: 32 },
+  iconImage: { width: 48, height: 48 },
   label: { marginTop: spacing.xs, fontSize: 12, textAlign: 'center' },
 });
