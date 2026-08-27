@@ -51,18 +51,16 @@ export default function HomeScreen() {
       <View style={[styles.backdrop, { backgroundColor: colors.primary }]} />
 
       <SafeAreaView edges={['top']}>
-        {selectedAddress ? (
-          <Pressable
-            style={({ pressed }) => [styles.locationRow, pressed && styles.pressed]}
-            onPress={() => addressSheetRef.current?.present()}
-            hitSlop={8}
-          >
-            <MapPin size={16} color="#fff" />
-            <Text fontWeight="600" style={styles.locationLabel} numberOfLines={1}>
-              {selectedAddress.formattedAddress}
-            </Text>
-          </Pressable>
-        ) : null}
+        <Pressable
+          style={({ pressed }) => [styles.locationRow, pressed && styles.pressed]}
+          onPress={() => addressSheetRef.current?.present()}
+          hitSlop={8}
+        >
+          <MapPin size={16} color="#fff" />
+          <Text fontWeight="600" style={styles.locationLabel} numberOfLines={1}>
+            {selectedAddress?.formattedAddress ?? 'Select delivery address'}
+          </Text>
+        </Pressable>
         <View style={styles.navRow}>
           <Pressable
             style={[styles.searchBar, { backgroundColor: colors.inputBg }]}
