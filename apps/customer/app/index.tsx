@@ -3,7 +3,7 @@ import { router, Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { MapPin, Search, UserRound } from 'lucide-react-native';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconButton, radii, SplashScreen, spacing, Text, useTheme } from '@ub/ui';
 import type { SelectedAddress } from '../lib/store/locationStore';
@@ -48,45 +48,46 @@ export default function HomeScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <StatusBar style="light" />
-      <View style={[styles.hero, { backgroundColor: colors.primary }]}>
-        <SafeAreaView edges={['top']}>
-          {selectedAddress ? (
-            <Pressable
-              style={({ pressed }) => [styles.locationRow, pressed && styles.pressed]}
-              onPress={() => addressSheetRef.current?.present()}
-              hitSlop={8}
-            >
-              <MapPin size={16} color="#fff" />
-              <Text fontWeight="600" style={styles.locationLabel} numberOfLines={1}>
-                {selectedAddress.formattedAddress}
-              </Text>
-            </Pressable>
-          ) : null}
-          <View style={styles.navRow}>
-            <Pressable
-              style={[styles.searchBar, { backgroundColor: colors.inputBg }]}
-              onPress={() => router.push('/search')}
-            >
-              <Search size={18} color={'#000'} />
-              <AnimatedSearchPlaceholder color={colors.placeholder} />
-            </Pressable>
-            <IconButton
-              variant="plain"
-              style={[
-                styles.profileButton,
-                { backgroundColor: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.6)' },
-              ]}
-              onPress={() => router.push('/profile')}
-            >
-              <UserRound size={22} color="#fff" />
-            </IconButton>
-          </View>
-          <View style={styles.servicesRow}>
-            <ServiceList onDark />
-          </View>
-        </SafeAreaView>
-      </View>
-      <View style={styles.body} />
+      <View style={[styles.backdrop, { backgroundColor: colors.primary }]} />
+
+      <SafeAreaView edges={['top']}>
+        {selectedAddress ? (
+          <Pressable
+            style={({ pressed }) => [styles.locationRow, pressed && styles.pressed]}
+            onPress={() => addressSheetRef.current?.present()}
+            hitSlop={8}
+          >
+            <MapPin size={16} color="#fff" />
+            <Text fontWeight="600" style={styles.locationLabel} numberOfLines={1}>
+              {selectedAddress.formattedAddress}
+            </Text>
+          </Pressable>
+        ) : null}
+        <View style={styles.navRow}>
+          <Pressable
+            style={[styles.searchBar, { backgroundColor: colors.inputBg }]}
+            onPress={() => router.push('/search')}
+          >
+            <Search size={18} color={'#000'} />
+            <AnimatedSearchPlaceholder color={colors.placeholder} />
+          </Pressable>
+          <IconButton
+            variant="plain"
+            style={[
+              styles.profileButton,
+              { backgroundColor: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.6)' },
+            ]}
+            onPress={() => router.push('/profile')}
+          >
+            <UserRound size={22} color="#fff" />
+          </IconButton>
+        </View>
+      </SafeAreaView>
+
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        <ServiceList onDark />
+        <View style={[styles.body, { backgroundColor: colors.background }]} />
+      </ScrollView>
 
       <AddressSheet ref={addressSheetRef} onSelect={handleSelectAddress} />
     </View>
@@ -95,7 +96,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  hero: { paddingBottom: spacing.lg },
+  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, height: '70%' },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -129,6 +130,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
   },
-  servicesRow: { marginTop: spacing.lg },
-  body: { flex: 1 },
+  scroll: { flex: 1 },
+  scrollContent: { paddingTop: spacing.lg, flexGrow: 1 },
+  body: { flex: 1, minHeight: 400 },
 });
