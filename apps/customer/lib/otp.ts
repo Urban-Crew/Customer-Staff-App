@@ -27,12 +27,13 @@ export function describeOtpError(err: unknown): string {
         : 'Please wait a moment before trying again.';
     }
 
+    const message = (err.response?.data as { message?: string | string[] } | undefined)?.message;
+    if (typeof message === 'string') return message;
+    if (Array.isArray(message) && message.length > 0) return message[0];
+
     if (status === 400) {
       return "That code didn't work — try again.";
     }
-
-    const message = (err.response?.data as { message?: string } | undefined)?.message;
-    if (typeof message === 'string') return message;
   }
 
   return 'Something went wrong. Please try again.';
