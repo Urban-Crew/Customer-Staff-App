@@ -1,14 +1,17 @@
 import type { Service } from '@ub/shared-types';
 
+const PLACEHOLDER_IMAGE =
+  'https://res.cloudinary.com/duhuphymw/image/upload/v1787826299/air_conditioner_PNG73_aoyqas.png';
+
 const MOCK_SERVICES: Service[] = [
-  { id: 'electrician', name: 'Electrician', icon: 'Zap' },
-  { id: 'plumber', name: 'Plumber', icon: 'Wrench' },
-  { id: 'ac-repair', name: 'AC Repair', icon: 'Wind' },
-  { id: 'cleaning', name: 'Home Cleaning', icon: 'Sparkles' },
-  { id: 'salon', name: 'Salon at Home', icon: 'Scissors' },
-  { id: 'pest-control', name: 'Pest Control', icon: 'Bug' },
-  { id: 'appliance-repair', name: 'Appliance Repair', icon: 'Hammer' },
-  { id: 'painting', name: 'Painting', icon: 'PaintBucket' },
+  { id: 'electrician', name: 'Electrician', imageUrl: PLACEHOLDER_IMAGE },
+  { id: 'plumber', name: 'Plumber', imageUrl: PLACEHOLDER_IMAGE },
+  { id: 'ac-repair', name: 'AC Repair', imageUrl: PLACEHOLDER_IMAGE },
+  { id: 'cleaning', name: 'Home Cleaning', imageUrl: PLACEHOLDER_IMAGE },
+  { id: 'salon', name: 'Salon at Home', imageUrl: PLACEHOLDER_IMAGE },
+  { id: 'pest-control', name: 'Pest Control', imageUrl: PLACEHOLDER_IMAGE },
+  { id: 'appliance-repair', name: 'Appliance Repair', imageUrl: PLACEHOLDER_IMAGE },
+  { id: 'painting', name: 'Painting', imageUrl: PLACEHOLDER_IMAGE },
 ];
 
 export async function getServices(): Promise<Service[]> {

@@ -21,5 +21,5 @@ export interface Customer {
 export interface Service {
   id: string;
   name: string;
-  icon: string;
+  imageUrl: string;
 }

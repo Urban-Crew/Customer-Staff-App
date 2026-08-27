@@ -1,29 +1,8 @@
-import {
-  Bug,
-  Hammer,
-  PaintBucket,
-  Scissors,
-  Sparkles,
-  Wind,
-  Wrench,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react-native';
+import { Image } from 'expo-image';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { spacing, Text, useTheme } from '@ub/ui';
 import type { Service } from '@ub/shared-types';
 import { useServices } from '../hooks/useServices';
-
-const ICONS: Record<string, LucideIcon> = {
-  Zap,
-  Wrench,
-  Wind,
-  Sparkles,
-  Scissors,
-  Bug,
-  Hammer,
-  PaintBucket,
-};
 
 export interface ServiceListProps {
   onDark?: boolean;
@@ -58,7 +37,6 @@ export function ServiceList({ onDark = false }: ServiceListProps) {
 
 function ServiceItem({ service, onDark }: { service: Service; onDark: boolean }) {
   const { colors } = useTheme();
-  const Icon = ICONS[service.icon] ?? Zap;
 
   return (
     <View style={styles.item}>
@@ -71,7 +49,7 @@ function ServiceItem({ service, onDark }: { service: Service; onDark: boolean })
           },
         ]}
       >
-        <Icon size={22} color={colors.primary} />
+        <Image source={{ uri: service.imageUrl }} style={styles.iconImage} contentFit="contain" />
       </View>
       <Text style={[styles.label, { color: onDark ? '#fff' : colors.ink }]} numberOfLines={1}>
         {service.name}
@@ -93,5 +71,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.05)',
   },
+  iconImage: { width: 32, height: 32 },
   label: { marginTop: spacing.xs, fontSize: 12, textAlign: 'center' },
 });
