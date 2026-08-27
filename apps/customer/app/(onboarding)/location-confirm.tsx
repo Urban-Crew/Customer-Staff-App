@@ -103,9 +103,6 @@ export default function LocationConfirmScreen() {
   useEffect(() => {
     if (phase !== 'confirmed') return;
     const timer = setTimeout(async () => {
-      // onboardingFlowStore is wiped by resetFlow() below, so persist the
-      // confirmed address into locationStore first — that's what the home
-      // screen reads from.
       if (address) await setSelectedLocation(address);
       await completeOnboarding();
       resetFlow();

@@ -44,3 +44,29 @@ export interface ReverseGeocodeRequest {
   lat: number;
   lng: number;
 }
+
+export interface SavedAddress {
+  id: string;
+  label: string;
+  flatNo: string;
+  areaText: string;
+  formattedAddress: string;
+  lat: number;
+  lng: number;
+  zoneId: string;
+  zoneName: string;
+  isServiceable: boolean;
+  isDefault: boolean;
+}
+
+export interface CreateAddressRequest {
+  label?: string;
+  flatNo: string;
+  areaText: string;
+  landmark?: string;
+  formattedAddr: string;
+  googlePlaceId?: string;
+  latitude: number;
+  longitude: number;
+  isDefault?: boolean;
+}

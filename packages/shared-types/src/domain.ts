@@ -17,3 +17,9 @@ export interface Customer {
   phone?: string;
   createdAt: string;
 }
+
+export interface Service {
+  id: string;
+  name: string;
+  icon: string;
+}

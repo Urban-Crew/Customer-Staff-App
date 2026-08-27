@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -77,8 +78,10 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <ThemeProvider>
             <QueryClientProvider client={queryClient}>
-              <Stack screenOptions={{ headerShown: false }} />
-              <StatusBar style="dark" />
+              <BottomSheetModalProvider>
+                <Stack screenOptions={{ headerShown: false }} />
+                <StatusBar style="dark" />
+              </BottomSheetModalProvider>
             </QueryClientProvider>
           </ThemeProvider>
         </SafeAreaProvider>
