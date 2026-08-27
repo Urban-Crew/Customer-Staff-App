@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { ChevronLeft, Lightbulb, LocateFixed, MapPin } from 'lucide-react-native';
 import {
   ActivityIndicator,
@@ -13,11 +14,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconButton, radii, spacing, useTheme } from '@ub/ui';
 import type { PlaceSuggestion } from '@ub/shared-types';
-import {
-  describeLocationError,
-  usePlacesAutocomplete,
-  useResolvePlace,
-} from '../../services/location.service';
+import { describeLocationError } from '../../services/location.service';
+import { usePlacesAutocomplete } from '../../hooks/usePlacesAutocomplete';
+import { useResolvePlace } from '../../hooks/useResolvePlace';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 
 export default function LocationManualScreen() {
@@ -47,6 +46,7 @@ export default function LocationManualScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <StatusBar style="light" />
       <SafeAreaView style={[styles.topBar, { backgroundColor: colors.primary }]} edges={['top']}>
         <View style={styles.topBarRow}>
           <IconButton variant="plain" onPress={() => router.back()}>

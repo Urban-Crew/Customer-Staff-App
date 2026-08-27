@@ -20,6 +20,7 @@ export function setAuthFailureListener(listener: AuthFailureListener | null) {
 export const apiClient = createApiClient({
   baseURL: API_URL,
   tokenStorage: secureTokenStorage,
+  enableLogging: __DEV__,
   async refreshTokens(refreshToken) {
     const { data } = await axios.post<AuthTokens>(`${API_URL}/auth/refresh`, {
       refreshToken,

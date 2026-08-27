@@ -1,11 +1,3 @@
-// --- Location / places (geo) ------------------------------------------------
-// Matches GET /api/v1/geo/{places/autocomplete,places/details,reverse-geocode}
-// — see https://api-stg.ubcrew.in/api/docs (Geo). These are a Google Places
-// proxy (API key stays server-side); the docs only give parameter names and
-// prose descriptions, no response schemas, so the shapes below follow the
-// onboarding location screens' existing usage. See services/location.service.ts
-// for the client methods.
-
 export interface Coordinates {
   latitude: number;
   longitude: number;
@@ -13,7 +5,6 @@ export interface Coordinates {
 
 export interface ResolvedAddress {
   formattedAddress: string;
-  /** Short line used as the headline on the confirmation screen, e.g. "Ayer Rajah Cres." */
   shortLine: string;
   city: string;
   postalCode: string;
@@ -38,12 +29,14 @@ export interface PlaceAutocompleteRequest {
 }
 
 export interface PlaceAutocompleteResponse {
-  suggestions: PlaceSuggestion[];
+  success: boolean;
+  data: {
+    suggestions: PlaceSuggestion[];
+  };
 }
 
 export interface PlaceDetailsRequest {
   placeId: string;
-  /** Same sessionToken used during autocomplete — closes the billing session. */
   sessionToken?: string;
 }
 

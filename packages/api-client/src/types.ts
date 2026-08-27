@@ -25,4 +25,5 @@ export interface ApiClientConfig {
   timeoutMs?: number;
   /** Extra default headers to send with every request. */
   headers?: Record<string, string>;
+  enableLogging?: boolean;
 }

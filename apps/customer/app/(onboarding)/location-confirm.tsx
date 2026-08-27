@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, spacing, useTheme } from '@ub/ui';
-import { useReverseGeocode } from '../../services/location.service';
+import { useReverseGeocode } from '../../hooks/useReverseGeocode';
 import {
   getCurrentCoordinates,
   openLocationSettings,
@@ -20,6 +20,7 @@ import {
 } from '../../lib/location';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
+import { useLocationStore } from '../../lib/store/locationStore';
 import { createLogger } from '../../lib/logger';
 import { Text } from '../../components';
 
@@ -46,6 +47,7 @@ export default function LocationConfirmScreen() {
   const setAddress = useOnboardingFlowStore((s) => s.setAddress);
   const resetFlow = useOnboardingFlowStore((s) => s.reset);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
+  const setSelectedLocation = useLocationStore((s) => s.setAddress);
   const reverseGeocode = useReverseGeocode();
   const [phase, setPhase] = useState<Phase>('fetching');
   const [errorReason, setErrorReason] = useState<LocationErrorReason>('unavailable');
@@ -101,12 +103,16 @@ export default function LocationConfirmScreen() {
   useEffect(() => {
     if (phase !== 'confirmed') return;
     const timer = setTimeout(async () => {
+      // onboardingFlowStore is wiped by resetFlow() below, so persist the
+      // confirmed address into locationStore first — that's what the home
+      // screen reads from.
+      if (address) await setSelectedLocation(address);
       await completeOnboarding();
       resetFlow();
       router.replace('/');
     }, 1200);
     return () => clearTimeout(timer);
-  }, [phase, completeOnboarding, resetFlow]);
+  }, [phase, address, completeOnboarding, resetFlow, setSelectedLocation]);
 
   return (
     <SafeAreaView
@@ -167,10 +173,7 @@ export default function LocationConfirmScreen() {
               fontWeight="700"
               style={[styles.confirmedTitle, { color: colors.ink }]}
             >
-              {address?.shortLine}
-            </Text>
-            <Text style={[styles.confirmedSubtitle, { color: colors.inkMuted }]}>
-              {address ? `${address.country} ${address.postalCode}` : ''}
+              {address?.formattedAddress}
             </Text>
           </>
         )}
