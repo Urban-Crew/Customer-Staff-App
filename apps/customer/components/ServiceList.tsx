@@ -74,6 +74,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
+    textAlign: 'center',
+    textTransform: 'uppercase',
   },
   row: { paddingHorizontal: spacing.lg, gap: spacing.lg },
   loadingRow: { paddingVertical: spacing.lg, alignItems: 'center' },
