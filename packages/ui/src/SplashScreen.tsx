@@ -1,5 +1,6 @@
 import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Image, type ImageSource } from 'expo-image';
+import { colors } from './theme';
 
 export interface SplashScreenProps {
   /** Local image asset, e.g. `require('../assets/splash-icon.png')`. */
@@ -21,7 +22,7 @@ export interface SplashScreenProps {
 export function SplashScreen({
   logo,
   logoSize = 120,
-  backgroundColor = '#fff',
+  backgroundColor = colors.background,
   loading = false,
   style,
 }: SplashScreenProps) {

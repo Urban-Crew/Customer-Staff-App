@@ -50,20 +50,22 @@ export default function LocationManualScreen() {
       <SafeAreaView style={[styles.topBar, { backgroundColor: colors.primary }]} edges={['top']}>
         <View style={styles.topBarRow}>
           <IconButton variant="plain" onPress={() => router.back()}>
-            <ChevronLeft size={24} color="#fff" />
+            <ChevronLeft size={24} color={colors.primaryText} />
           </IconButton>
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Enter address (some tips below)"
-            placeholderTextColor="rgba(255,255,255,0.5)"
-            style={styles.searchInput}
+            placeholderTextColor={`${colors.primaryText}80`}
+            style={[styles.searchInput, { color: colors.primaryText }]}
             autoFocus
           />
         </View>
-        <View style={styles.tipBanner}>
-          <Lightbulb size={14} color="#fff" />
-          <Text style={styles.tipText}>Enter your building name or street for best results</Text>
+        <View style={[styles.tipBanner, { backgroundColor: `${colors.primaryText}1A` }]}>
+          <Lightbulb size={14} color={colors.primaryText} />
+          <Text style={[styles.tipText, { color: `${colors.primaryText}D9` }]}>
+            Enter your building name or street for best results
+          </Text>
         </View>
       </SafeAreaView>
 
@@ -140,7 +142,6 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: '#fff',
     fontSize: 17,
     paddingVertical: spacing.md,
   },
@@ -148,11 +149,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.1)',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
-  tipText: { flex: 1, color: 'rgba(255,255,255,0.85)', fontSize: 12 },
+  tipText: { flex: 1, fontSize: 12 },
   pressed: { opacity: 0.6 },
   emptyState: { flex: 1, alignItems: 'center', paddingTop: spacing.xxl, gap: spacing.lg },
   orRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, width: '80%' },

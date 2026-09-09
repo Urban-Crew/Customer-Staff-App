@@ -39,7 +39,7 @@ export default function HomeScreen() {
               left={<Search size={18} color={colors.inkFaint} />}
             />
             <IconButton variant="plain" onPress={() => router.push('/profile')}>
-              <UserRound size={22} color="#fff" />
+              <UserRound size={22} color={colors.primaryText} />
             </IconButton>
           </View>
         </SafeAreaView>
