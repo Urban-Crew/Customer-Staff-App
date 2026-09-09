@@ -110,22 +110,34 @@ export const darkColors: ThemeColors = {
 /** @deprecated Use `lightColors` (or `useTheme()` for the active scheme's palette). Kept for existing static imports. */
 export const colors = lightColors;
 
-export const radii = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999 } as const;
+export const radii = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999, squircle: 16 } as const;
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
 
+/** Flat, low, cross-platform ambient shadow shared by cards and secondary buttons. */
+export const ambientShadow = '0px 1px 3px rgba(0, 0, 0, 0.06)';
+
+/** Converts a `#rrggbb` theme color into an `rgba()` string at the given alpha, for `boxShadow`. */
+export function withAlpha(hex: string, alpha: number): string {
+  const value = hex.replace('#', '');
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 /**
  * Shared "card" surface: white fill over the app's off-white background, a single
- * hairline border, radius 16, and one soft cross-platform shadow via `boxShadow`
- * (no ios/android shadow/elevation branching).
+ * hairline border, squircle radius, and one soft cross-platform shadow via `boxShadow`
+ * (no ios/android shadow/elevation branching). `overflow` is left at its default
+ * ('visible') so the shadow isn't clipped by the surface's own bounds.
  */
 export const cardStyle: ViewStyle = {
   backgroundColor: colors.surface,
   borderColor: colors.border,
-  borderRadius: 16,
+  borderRadius: radii.squircle,
   borderWidth: StyleSheet.hairlineWidth || 1,
-  overflow: 'hidden',
-  boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.03)',
+  boxShadow: ambientShadow,
 };
 
 export { ThemeProvider, useTheme } from './ThemeProvider';

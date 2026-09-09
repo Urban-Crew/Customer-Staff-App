@@ -18,7 +18,7 @@ export interface InputProps extends Omit<TextInputProps, 'style'> {
   inputStyle?: StyleProp<TextStyle>;
 }
 
-/** Plain outlined text field: white fill, single-tone border, no shadow or blur. */
+/** Plain outlined text field: white fill, single-tone border, soft ambient shadow, no blur. */
 export const Input = forwardRef<TextInput, InputProps>(function Input(
   { left, right, error, style, inputStyle, onFocus, onBlur, ...rest },
   ref,

@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SquircleView } from 'expo-squircle-view';
-import { radii, useTheme } from './theme';
+import { ambientShadow, radii, withAlpha, useTheme } from './theme';
 
 export interface ButtonProps {
   label: string;
@@ -42,16 +42,30 @@ export function Button({
   const isSm = size === 'sm';
   const isPrimary = variant === 'primary';
   const isSecondary = variant === 'secondary';
-  const buttonRadius = radii.pill;
+  // Same squircle radius as the input fields, so buttons and inputs read as one shape language.
+  const buttonRadius = radii.squircle;
 
   const dynamicVariantStyle: ViewStyle = isPrimary
-    ? { backgroundColor: colors.primary, borderWidth: 0 }
+    ? {
+        backgroundColor: colors.primary,
+        borderWidth: 0,
+        boxShadow: `0px 10px 20px -8px ${withAlpha(colors.primary, 0.5)}`,
+      }
     : isSecondary
-      ? { backgroundColor: colors.secondaryBg, borderWidth: 1, borderColor: colors.secondaryBorder }
+      ? {
+          backgroundColor: colors.secondaryBg,
+          borderWidth: 1,
+          borderColor: colors.secondaryBorder,
+          boxShadow: ambientShadow,
+        }
       : { backgroundColor: 'transparent', borderWidth: 0 };
 
   return (
-    <Pressable onPress={onPress} disabled={isDisabled || loading} style={fullWidth && styles.fullWidth}>
+    <Pressable
+      onPress={onPress}
+      disabled={isDisabled || loading}
+      style={fullWidth && styles.fullWidth}
+    >
       {({ pressed }) => (
         <SquircleView
           cornerSmoothing={100}
@@ -67,6 +81,7 @@ export function Button({
                 backgroundColor: colors.disabledBg,
                 borderColor: colors.disabledBorder,
                 borderWidth: isPrimary || isSecondary ? 1 : 0,
+                boxShadow: 'none',
               },
             pressed &&
               !isDisabled &&
