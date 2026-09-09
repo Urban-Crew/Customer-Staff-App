@@ -12,7 +12,7 @@ export interface TopIconsGridProps {
 }
 
 const COLUMNS = 3;
-const ICON_SIZE = 26;
+const ICON_SIZE = 30;
 
 /** Renders a remote category icon — .svg via react-native-svg's SvgUri, anything else via expo-image. Falls back to a generic tag icon when the API sends no icon at all. */
 function EntityIcon({ uri, color }: { uri: string | null; color: string }) {
@@ -88,9 +88,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
   },
   iconChip: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
+    width: 68,
+    height: 68,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
