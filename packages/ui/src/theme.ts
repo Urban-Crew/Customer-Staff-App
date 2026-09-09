@@ -37,8 +37,8 @@ export interface ThemeColors {
   error: string;
 }
 
-/** Single, fixed palette — no light/dark mode. Cobalt/navy ubcrew brand tokens. */
-export const colors: ThemeColors = {
+/** Light palette — cobalt/navy ubcrew brand tokens. Used when the system is in light mode. */
+export const lightColors: ThemeColors = {
   background: '#F7F9FC',
   surface: '#FFFFFF',
   surfaceSubtle: '#EEF2F8',
@@ -69,6 +69,46 @@ export const colors: ThemeColors = {
 
   error: '#E5484D',
 };
+
+/**
+ * Dark palette — same cobalt/navy brand, dark surfaces. Mirrors the dark
+ * tokens from the ubcrew brand-system mockup (navy 950 canvas, cobalt 500
+ * brand). Used when the system is in dark mode.
+ */
+export const darkColors: ThemeColors = {
+  background: '#050A16',
+  surface: '#0A1426',
+  surfaceSubtle: '#101D35',
+  ink: '#FFFFFF',
+  inkMuted: '#C7D0E0',
+  inkFaint: '#98A3BD',
+
+  border: '#253A5E',
+  hairline: '#182948',
+
+  primary: '#4C81FF',
+  primaryPressed: '#2F5FFF',
+  primaryText: '#FFFFFF',
+
+  secondaryBg: '#0A1426',
+  secondaryBorder: '#253A5E',
+  secondaryPressed: '#182948',
+  secondaryText: '#FFFFFF',
+
+  disabledBg: '#182948',
+  disabledBorder: '#182948',
+  disabledText: '#98A3BD',
+
+  inputBg: '#0A1426',
+  inputBorder: '#253A5E',
+  inputBorderFocused: '#4C81FF',
+  placeholder: '#98A3BD',
+
+  error: '#FF6B6B',
+};
+
+/** @deprecated Use `lightColors` (or `useTheme()` for the active scheme's palette). Kept for existing static imports. */
+export const colors = lightColors;
 
 export const radii = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999 } as const;
 

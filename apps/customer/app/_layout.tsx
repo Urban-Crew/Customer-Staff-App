@@ -80,7 +80,7 @@ export default function RootLayout() {
             <QueryClientProvider client={queryClient}>
               <BottomSheetModalProvider>
                 <Stack screenOptions={{ headerShown: false }} />
-                <StatusBar style="dark" />
+                <StatusBar style="auto" />
               </BottomSheetModalProvider>
             </QueryClientProvider>
           </ThemeProvider>
