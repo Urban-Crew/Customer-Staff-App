@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { Linking, Text } from 'react-native';
-import { OnboardingLayout, PhoneInput, useTheme } from '@ub/ui';
+import { OnboardingLayout, PhoneInput, useTheme, useToast } from '@ub/ui';
 import { describeOtpError, toE164 } from '../../lib/otp';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
@@ -11,6 +11,7 @@ const PRIVACY_URL = 'https://ubcrew.in/privacy';
 
 export default function PhoneScreen() {
   const { colors } = useTheme();
+  const { showSuccess, showError } = useToast();
   const countryCode = useOnboardingFlowStore((s) => s.countryCode);
   const phone = useOnboardingFlowStore((s) => s.phone);
   const setCountryCode = useOnboardingFlowStore((s) => s.setCountryCode);
@@ -28,7 +29,11 @@ export default function PhoneScreen() {
       {
         onSuccess: ({ requestId, resendAvailableInSeconds }) => {
           setOtpRequest(requestId, resendAvailableInSeconds);
+          showSuccess('Code sent — check your messages.');
           router.push('/(onboarding)/otp');
+        },
+        onError: (err) => {
+          showError(describeOtpError(err));
         },
       },
     );

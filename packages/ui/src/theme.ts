@@ -35,6 +35,8 @@ export interface ThemeColors {
   placeholder: string;
 
   error: string;
+  /** Status accent for success states (toasts, confirmations) — same tone in both schemes. */
+  success: string;
 }
 
 /** Light palette — cobalt/navy ubcrew brand tokens. Used when the system is in light mode. */
@@ -68,6 +70,7 @@ export const lightColors: ThemeColors = {
   placeholder: '#6B7690',
 
   error: '#E5484D',
+  success: '#22B36B',
 };
 
 /**
@@ -105,12 +108,13 @@ export const darkColors: ThemeColors = {
   placeholder: '#98A3BD',
 
   error: '#FF6B6B',
+  success: '#22B36B',
 };
 
 /** @deprecated Use `lightColors` (or `useTheme()` for the active scheme's palette). Kept for existing static imports. */
 export const colors = lightColors;
 
-export const radii = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999, squircle: 16 } as const;
+export const radii = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999, squircle: 15 } as const;
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
 

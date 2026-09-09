@@ -6,7 +6,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
-import { SplashScreen as SplashScreenView, ThemeProvider } from '@ub/ui';
+import { SplashScreen as SplashScreenView, ThemeProvider, ToastProvider } from '@ub/ui';
 import { queryClient } from '../lib/queryClient';
 import { useAuthStore } from '../lib/store/authStore';
 
@@ -37,10 +37,12 @@ export default function RootLayout() {
       <KeyboardProvider>
         <SafeAreaProvider>
           <ThemeProvider>
-            <QueryClientProvider client={queryClient}>
-              <Stack screenOptions={{ headerShown: false }} />
-              <StatusBar style="auto" />
-            </QueryClientProvider>
+            <ToastProvider>
+              <QueryClientProvider client={queryClient}>
+                <Stack screenOptions={{ headerShown: false }} />
+                <StatusBar style="auto" />
+              </QueryClientProvider>
+            </ToastProvider>
           </ThemeProvider>
         </SafeAreaProvider>
       </KeyboardProvider>
