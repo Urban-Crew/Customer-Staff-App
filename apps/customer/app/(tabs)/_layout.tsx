@@ -1,11 +1,21 @@
 import { useEffect } from 'react';
 import { Redirect, Tabs } from 'expo-router';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import { Platform, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SplashScreen, useTheme } from '@ub/ui';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
 
+// react-navigation's bottom tabs handle the home-indicator inset fine on
+// iOS, but on Android (especially with edge-to-edge, the default from
+// Android 15/SDK 35) the bar ends up flush against the gesture/nav bar —
+// pad it out ourselves there instead.
+const BASE_TAB_BAR_HEIGHT = 56;
+const ICON_SIZE = 20;
+
 export default function TabsLayout() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const hasOnboarded = useOnboardingStore((s) => s.hasOnboarded);
   const isOnboardingHydrating = useOnboardingStore((s) => s.isHydrating);
   const hydrateOnboarding = useOnboardingStore((s) => s.hydrate);
@@ -31,9 +41,21 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.inkFaint,
+        // The default tabBarButton is a PlatformPressable, which shows
+        // Android's ripple touch feedback (not present on iOS) — swap in a
+        // plain Pressable with the ripple color zeroed out to drop it.
+        tabBarButton: ({ ref: _ref, ...props }) => (
+          <Pressable {...props} android_ripple={{ color: 'transparent' }} />
+        ),
         tabBarStyle: {
           backgroundColor: colors.background,
           borderTopColor: colors.hairline,
+          ...(Platform.OS === 'android'
+            ? {
+                height: BASE_TAB_BAR_HEIGHT + insets.bottom,
+                paddingBottom: insets.bottom,
+              }
+            : null),
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}
@@ -44,11 +66,11 @@ export default function TabsLayout() {
           title: 'Home',
           // Feather (outline) when inactive — it has no filled variant, so the
           // active state swaps to the matching solid Ionicons glyph instead.
-          tabBarIcon: ({ size, focused }) =>
+          tabBarIcon: ({ focused }) =>
             focused ? (
-              <Ionicons name="home" size={size} color={colors.inkMuted} />
+              <Ionicons name="home" size={ICON_SIZE} color={colors.inkMuted} />
             ) : (
-              <Feather name="home" size={size} color={colors.inkFaint} />
+              <Feather name="home" size={ICON_SIZE} color={colors.inkFaint} />
             ),
         }}
       />
@@ -56,11 +78,11 @@ export default function TabsLayout() {
         name="bookings"
         options={{
           title: 'Bookings',
-          tabBarIcon: ({ size, focused }) =>
+          tabBarIcon: ({ focused }) =>
             focused ? (
-              <Ionicons name="calendar" size={size} color={colors.inkMuted} />
+              <Ionicons name="calendar" size={ICON_SIZE} color={colors.inkMuted} />
             ) : (
-              <Feather name="calendar" size={size} color={colors.inkFaint} />
+              <Feather name="calendar" size={ICON_SIZE} color={colors.inkFaint} />
             ),
         }}
       />
@@ -68,11 +90,11 @@ export default function TabsLayout() {
         name="services"
         options={{
           title: 'Services',
-          tabBarIcon: ({ size, focused }) =>
+          tabBarIcon: ({ focused }) =>
             focused ? (
-              <Ionicons name="grid" size={size} color={colors.inkMuted} />
+              <Ionicons name="grid" size={ICON_SIZE} color={colors.inkMuted} />
             ) : (
-              <Feather name="grid" size={size} color={colors.inkFaint} />
+              <Feather name="grid" size={ICON_SIZE} color={colors.inkFaint} />
             ),
         }}
       />
@@ -80,11 +102,11 @@ export default function TabsLayout() {
         name="account"
         options={{
           title: 'Account',
-          tabBarIcon: ({ size, focused }) =>
+          tabBarIcon: ({ focused }) =>
             focused ? (
-              <Ionicons name="person" size={size} color={colors.inkMuted} />
+              <Ionicons name="person" size={ICON_SIZE} color={colors.inkMuted} />
             ) : (
-              <Feather name="user" size={size} color={colors.inkFaint} />
+              <Feather name="user" size={ICON_SIZE} color={colors.inkFaint} />
             ),
         }}
       />

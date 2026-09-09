@@ -53,12 +53,14 @@ export interface HomeHeaderConfig {
 export interface HomeTopIconEntity {
   name: string;
   slug: string;
-  iconUrl: string;
+  iconUrl: string | null;
 }
+
+export type HomeTopIconEntityType = 'CATEGORY' | 'SUB_CATEGORY' | 'SERVICE_VARIANT' | 'SERVICE';
 
 export interface HomeTopIcon {
   id: string;
-  entityType: 'CATEGORY' | string;
+  entityType: HomeTopIconEntityType | string;
   entityId: string;
   displayOrder: number;
   entity: HomeTopIconEntity;

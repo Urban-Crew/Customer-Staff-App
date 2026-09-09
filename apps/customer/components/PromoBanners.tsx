@@ -107,16 +107,24 @@ export function PromoBanners({ banners, intervalMs = 4500 }: PromoBannersProps) 
 
 const styles = StyleSheet.create({
   wrap: {
-    height: 104,
+    minHeight: 104,
     paddingHorizontal: spacing.lg,
     overflow: 'hidden',
   },
   row: {
-    flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
   },
-  textCol: { flex: 1, gap: 4, paddingRight: spacing.sm },
+  // Text is top-aligned and sized to its own content (so a 2-line title
+  // never gets clipped) — only the image is pinned to the bottom of the
+  // row, standing at the bottom edge of the promo area.
+  textCol: {
+    flex: 1,
+    alignSelf: 'flex-start',
+    gap: 4,
+    paddingRight: spacing.sm,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
+  },
   title: { fontSize: 17, color: '#fff' },
   subtitle: { fontSize: 13, lineHeight: 17, color: 'rgba(255,255,255,0.8)' },
   cta: {
@@ -126,6 +134,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   ctaLabel: { fontSize: 14, color: '#fff' },
-  imageWrap: { width: IMAGE_SIZE, height: IMAGE_SIZE },
+  imageWrap: {
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
+    alignSelf: 'flex-end',
+  },
   image: { width: '100%', height: '100%' },
 });

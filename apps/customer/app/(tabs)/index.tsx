@@ -4,7 +4,14 @@ import { StatusBar } from 'expo-status-bar';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MapPin } from 'lucide-react-native';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   runOnJS,
@@ -18,7 +25,7 @@ import type { SelectedAddress } from '../../lib/store/locationStore';
 import { AddressSheet } from '../../components/AddressSheet';
 import { HomeSearchRow } from '../../components/HomeSearchRow';
 import { PromoBanners } from '../../components/PromoBanners';
-import { ServiceList } from '../../components/ServiceList';
+import { TopIconsGrid } from '../../components/TopIconsGrid';
 import { useHomeFeed } from '../../hooks/useHomeFeed';
 import { useLocationStore } from '../../lib/store/locationStore';
 
@@ -52,7 +59,11 @@ function HeaderFill({
   fallback: string;
   style: StyleProp<ViewStyle>;
 }) {
-  if (header?.backgroundType === 'GRADIENT' && header.gradientColors && header.gradientColors.length >= 2) {
+  if (
+    header?.backgroundType === 'GRADIENT' &&
+    header.gradientColors &&
+    header.gradientColors.length >= 2
+  ) {
     const points = GRADIENT_POINTS[header.gradientDirection ?? 'LEFT_TO_RIGHT'];
     return (
       <LinearGradient
@@ -78,6 +89,15 @@ export default function HomeScreen() {
   const scrollY = useSharedValue(0);
   const floatingShown = useSharedValue(false);
   const [floatingVisible, setFloatingVisible] = useState(false);
+  // Measured height of the colored zone's actual content (address row +
+  // search row + promo banner), so the backdrop always matches it exactly
+  // instead of a guessed fixed height — otherwise a 2-line banner title (or
+  // the promo image standing at its bottom) can spill past a too-short
+  // backdrop onto the white background below it.
+  const [colorZoneHeight, setColorZoneHeight] = useState(260);
+  const handleColorZoneLayout = (event: LayoutChangeEvent) => {
+    setColorZoneHeight(event.nativeEvent.layout.height);
+  };
 
   useEffect(() => {
     hydrateLocation();
@@ -120,8 +140,12 @@ export default function HomeScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <StatusBar style="light" />
-      <View style={styles.backdrop}>
-        <HeaderFill header={homeFeed?.header} fallback={colors.primary} style={StyleSheet.absoluteFill} />
+      <View style={[styles.backdrop, { height: insets.top + colorZoneHeight }]}>
+        <HeaderFill
+          header={homeFeed?.header}
+          fallback={colors.primary}
+          style={StyleSheet.absoluteFill}
+        />
       </View>
 
       <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -132,30 +156,32 @@ export default function HomeScreen() {
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
         >
-          <Pressable
-            style={({ pressed }) => [styles.locationRow, pressed && styles.pressed]}
-            onPress={() => addressSheetRef.current?.present()}
-            hitSlop={8}
-          >
-            <MapPin size={16} color="#fff" />
-            <Text fontWeight="600" style={styles.locationLabel} numberOfLines={1}>
-              {selectedAddress?.formattedAddress ?? 'Select delivery address'}
-            </Text>
-          </Pressable>
+          <View onLayout={handleColorZoneLayout}>
+            <Pressable
+              style={({ pressed }) => [styles.locationRow, pressed && styles.pressed]}
+              onPress={() => addressSheetRef.current?.present()}
+              hitSlop={8}
+            >
+              <MapPin size={16} color="#fff" />
+              <Text fontWeight="600" style={styles.locationLabel} numberOfLines={1}>
+                {selectedAddress?.formattedAddress ?? 'Select delivery address'}
+              </Text>
+            </Pressable>
 
-          <Animated.View style={[styles.navRow, inlineNavStyle]}>
-            <HomeSearchRow
-              onPressSearch={() => router.push('/search')}
-              onPressProfile={() => router.push('/account')}
-            />
-          </Animated.View>
+            <Animated.View style={[styles.navRow, inlineNavStyle]}>
+              <HomeSearchRow
+                onPressSearch={() => router.push('/search')}
+                onPressProfile={() => router.push('/account')}
+              />
+            </Animated.View>
 
-          <View style={styles.bannersWrap}>
-            <PromoBanners banners={homeFeed?.promoBanners ?? []} />
+            <View style={styles.bannersWrap}>
+              <PromoBanners banners={homeFeed?.promoBanners ?? []} />
+            </View>
           </View>
 
           <View style={[styles.body, { backgroundColor: colors.background }]}>
-            <ServiceList layout="vertical" title="All Services" />
+            <TopIconsGrid topIcons={homeFeed?.topIcons ?? []} />
           </View>
         </Animated.ScrollView>
       </SafeAreaView>
@@ -164,7 +190,11 @@ export default function HomeScreen() {
         pointerEvents={floatingVisible ? 'auto' : 'none'}
         style={[styles.floatingHeader, floatingStyle, { paddingTop: insets.top }]}
       >
-        <HeaderFill header={homeFeed?.header} fallback={colors.primary} style={StyleSheet.absoluteFill} />
+        <HeaderFill
+          header={homeFeed?.header}
+          fallback={colors.primary}
+          style={StyleSheet.absoluteFill}
+        />
         <View style={styles.navRow}>
           <HomeSearchRow
             onPressSearch={() => router.push('/search')}
@@ -180,7 +210,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, height: '34%' },
+  backdrop: { position: 'absolute', top: 0, left: 0, right: 0 },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -201,8 +231,8 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { flexGrow: 1 },
-  bannersWrap: { marginTop: spacing.md },
-  body: { flex: 1, minHeight: 400, marginTop: spacing.lg, paddingTop: spacing.lg },
+  bannersWrap: { marginTop: spacing.xs },
+  body: { flex: 1, minHeight: 400, paddingTop: spacing.sm },
   floatingHeader: {
     position: 'absolute',
     top: 0,
