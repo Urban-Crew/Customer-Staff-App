@@ -37,37 +37,37 @@ export interface ThemeColors {
   error: string;
 }
 
-/** Single, fixed palette — no light/dark mode. */
+/** Single, fixed palette — no light/dark mode. Cobalt/navy ubcrew brand tokens. */
 export const colors: ThemeColors = {
-  background: '#F8FAFC',
+  background: '#F7F9FC',
   surface: '#FFFFFF',
-  surfaceSubtle: '#F1F5F9',
-  ink: '#0F172A',
-  inkMuted: '#6B7280',
-  inkFaint: '#9CA3AF',
+  surfaceSubtle: '#EEF2F8',
+  ink: '#12172A',
+  inkMuted: '#4C5670',
+  inkFaint: '#6B7690',
 
-  border: '#E8E4E6',
-  hairline: '#E8E4E6',
+  border: '#E1E7F0',
+  hairline: '#EEF2F8',
 
-  primary: '#0F172A',
-  primaryPressed: '#1F2937',
+  primary: '#2F5FFF',
+  primaryPressed: '#1533AD',
   primaryText: '#FFFFFF',
 
   secondaryBg: '#FFFFFF',
-  secondaryBorder: '#E8E4E6',
-  secondaryPressed: '#F3F4F6',
-  secondaryText: '#0F172A',
+  secondaryBorder: '#E1E7F0',
+  secondaryPressed: '#EEF2F8',
+  secondaryText: '#12172A',
 
-  disabledBg: '#F3F4F6',
-  disabledBorder: '#F3F4F6',
-  disabledText: '#9CA3AF',
+  disabledBg: '#EEF2F8',
+  disabledBorder: '#EEF2F8',
+  disabledText: '#C7D0E0',
 
   inputBg: '#FFFFFF',
-  inputBorder: '#E8E4E6',
-  inputBorderFocused: '#0F172A',
-  placeholder: '#9CA3AF',
+  inputBorder: '#E1E7F0',
+  inputBorderFocused: '#2F5FFF',
+  placeholder: '#6B7690',
 
-  error: '#EF4444',
+  error: '#E5484D',
 };
 
 export const radii = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999 } as const;
