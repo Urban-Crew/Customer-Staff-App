@@ -119,7 +119,7 @@ export default function LocationConfirmScreen() {
       <View style={styles.center}>
         {phase === 'fetching' ? (
           <>
-            <PulsingPin pinColor={colors.ink} />
+            <PulsingPin pinColor={colors.primary} pinIconColor={colors.primaryText} />
             <Text style={[styles.fetchingLabel, { color: colors.inkMuted }]}>
               Fetching your location...
             </Text>
@@ -179,7 +179,7 @@ export default function LocationConfirmScreen() {
   );
 }
 
-function PulsingPin({ pinColor }: { pinColor: string }) {
+function PulsingPin({ pinColor, pinIconColor }: { pinColor: string; pinIconColor: string }) {
   const scale = useSharedValue(0.6);
   const opacity = useSharedValue(0.6);
 
@@ -205,7 +205,7 @@ function PulsingPin({ pinColor }: { pinColor: string }) {
     <View style={styles.pulseWrap}>
       <Animated.View style={[styles.pulseRing, { backgroundColor: pinColor }, ringStyle]} />
       <View style={[styles.pin, { backgroundColor: pinColor }]}>
-        <MapPin size={22} color="#fff" />
+        <MapPin size={22} color={pinIconColor} />
       </View>
     </View>
   );

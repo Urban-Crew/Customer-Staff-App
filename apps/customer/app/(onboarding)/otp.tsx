@@ -71,17 +71,17 @@ export default function OtpScreen() {
 
   return (
     <OnboardingLayout
-      title="Enter verification code"
+      title="Enter the code"
       onBack={() => router.back()}
       primaryAction={{
-        label: 'Verify OTP',
+        label: 'Continue',
         onPress: handleVerify,
         disabled: !canVerify,
         loading: verifyOtp.isPending,
       }}
       description={
         <>
-          A 6-digit verification code has been sent to{'\n'}
+          Sent to{' '}
           <Text style={[styles.phone, { color: colors.ink }]}>
             {countryCode} {phone}
           </Text>
@@ -89,7 +89,9 @@ export default function OtpScreen() {
       }
     >
       <OtpInput value={otp} onChangeText={setOtp} autoFocus editable={!busy} />
-      {error ? <Text style={styles.error}>{describeOtpError(error)}</Text> : null}
+      {error ? (
+        <Text style={[styles.error, { color: colors.error }]}>{describeOtpError(error)}</Text>
+      ) : null}
 
       {secondsLeft > 0 ? (
         <View style={styles.timerRow}>
@@ -127,7 +129,7 @@ export default function OtpScreen() {
 
 const styles = StyleSheet.create({
   phone: { fontWeight: '700' },
-  error: { fontSize: 13, color: '#EF4444' },
+  error: { fontSize: 13 },
   timerRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   timerLabel: { fontSize: 14 },
   resendBlock: { gap: 12 },

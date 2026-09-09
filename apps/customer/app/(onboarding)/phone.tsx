@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { Linking, Text } from 'react-native';
-import { OnboardingLayout, PhoneInput } from '@ub/ui';
+import { OnboardingLayout, PhoneInput, useTheme } from '@ub/ui';
 import { describeOtpError, toE164 } from '../../lib/otp';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
@@ -10,6 +10,7 @@ const TERMS_URL = 'https://ubcrew.in/terms';
 const PRIVACY_URL = 'https://ubcrew.in/privacy';
 
 export default function PhoneScreen() {
+  const { colors } = useTheme();
   const countryCode = useOnboardingFlowStore((s) => s.countryCode);
   const phone = useOnboardingFlowStore((s) => s.phone);
   const setCountryCode = useOnboardingFlowStore((s) => s.setCountryCode);
@@ -40,30 +41,30 @@ export default function PhoneScreen() {
 
   return (
     <OnboardingLayout
-      title="Enter your phone number"
-      description="We'll send you a text with a verification code."
+      title="What's your number?"
+      description="We'll text a 6-digit code to make sure it's really you."
       onSkip={handleSkip}
       footnote={
         <>
-          By continuing, you agree to our{' '}
+          By continuing you agree to ubcrew's{' '}
           <Text
-            style={{ textDecorationLine: 'underline', color: '#000' }}
+            style={{ textDecorationLine: 'underline', color: colors.primary }}
             onPress={() => Linking.openURL(TERMS_URL)}
           >
-            T&C
+            Terms
           </Text>{' '}
           and{' '}
           <Text
-            style={{ textDecorationLine: 'underline', color: '#000' }}
+            style={{ textDecorationLine: 'underline', color: colors.primary }}
             onPress={() => Linking.openURL(PRIVACY_URL)}
           >
-            Privacy
-          </Text>{' '}
-          policy
+            Privacy Policy
+          </Text>
+          .
         </>
       }
       primaryAction={{
-        label: 'Send OTP',
+        label: 'Continue',
         onPress: handleContinue,
         disabled: !canContinue,
         loading: sendOtp.isPending,
@@ -77,7 +78,7 @@ export default function PhoneScreen() {
         autoFocus
       />
       {sendOtp.error ? (
-        <Text style={{ fontSize: 13, color: '#EF4444' }}>{describeOtpError(sendOtp.error)}</Text>
+        <Text style={{ fontSize: 13, color: colors.error }}>{describeOtpError(sendOtp.error)}</Text>
       ) : null}
     </OnboardingLayout>
   );

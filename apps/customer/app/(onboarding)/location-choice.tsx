@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { MapPin } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, spacing, useTheme } from '@ub/ui';
@@ -15,22 +14,21 @@ export default function LocationChoiceScreen() {
     >
       <View style={styles.content}>
         <View style={styles.body}>
-          <MapPin size={32} color={colors.ink} />
           <Text variant="heading" fontWeight="700" style={[styles.title, { color: colors.ink }]}>
-            Where do you want your service?
+            Where should we send help?
           </Text>
           <Text style={[styles.subtitle, { color: colors.inkMuted }]}>
-            Set your location to see available services and verified staff in your area.
+            We'll match pros serving this area
           </Text>
         </View>
 
         <View style={styles.footer}>
           <Button
-            label="At my current location"
+            label="Use current location"
             onPress={() => router.push('/(onboarding)/location-confirm')}
           />
           <Button
-            label="I'll enter my location manually"
+            label="Enter address manually"
             variant="secondary"
             onPress={() => router.push('/(onboarding)/location-manual')}
           />

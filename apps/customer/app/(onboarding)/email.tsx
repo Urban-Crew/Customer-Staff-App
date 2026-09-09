@@ -30,10 +30,10 @@ export default function EmailScreen() {
   return (
     <OnboardingLayout
       title="Add your email"
-      description="Please provide your email address for account-related updates and communication."
+      description="For booking confirmations and receipts — no spam, promise."
       onSkip={handleSkip}
       primaryAction={{
-        label: 'Add email',
+        label: 'Save email',
         onPress: handleContinue,
         disabled: !canContinue,
         loading: submitting,
