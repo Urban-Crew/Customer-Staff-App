@@ -29,7 +29,8 @@
       "expo-splash-screen",
       "expo-font",
       "expo-secure-store",
-      "expo-image"
+      "expo-image",
+      "expo-maps"
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { SquircleView } from 'expo-squircle-view';
 import { radii, useTheme } from './theme';
 
 export interface IconButtonProps {
@@ -9,26 +10,29 @@ export interface IconButtonProps {
   style?: StyleProp<ViewStyle>;
 }
 
-/** Icon-only pressable: a plain bordered circle, or unstyled when overlaid on a solid surface. */
+/** Icon-only pressable: a plain bordered squircle, or unstyled when overlaid on a solid surface. */
 export function IconButton({ children, onPress, variant = 'outlined', style }: IconButtonProps) {
   const { colors } = useTheme();
   const isOutlined = variant === 'outlined';
 
   return (
-    <Pressable
-      onPress={onPress}
-      hitSlop={12}
-      style={({ pressed }) => [
-        styles.base,
-        isOutlined && {
-          backgroundColor: colors.secondaryBg,
-          borderColor: colors.secondaryBorder,
-        },
-        pressed && (isOutlined ? styles.pressedOutlined : styles.pressedPlain),
-        style,
-      ]}
-    >
-      {children}
+    <Pressable onPress={onPress} hitSlop={12}>
+      {({ pressed }) => (
+        <SquircleView
+          cornerSmoothing={100}
+          style={[
+            styles.base,
+            isOutlined && {
+              backgroundColor: colors.secondaryBg,
+              borderColor: colors.secondaryBorder,
+            },
+            pressed && (isOutlined ? styles.pressedOutlined : styles.pressedPlain),
+            style,
+          ]}
+        >
+          {children}
+        </SquircleView>
+      )}
     </Pressable>
   );
 }

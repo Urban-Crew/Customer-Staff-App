@@ -99,5 +99,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconImage: { width: 48, height: 48 },
-  label: { marginTop: spacing.sm, fontSize: 12, textAlign: 'center' },
+  label: { marginTop: spacing.sm, fontSize: 14, textAlign: 'center' },
 });

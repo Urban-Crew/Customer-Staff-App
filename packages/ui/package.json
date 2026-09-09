@@ -11,6 +11,7 @@
   "peerDependencies": {
     "@lodev09/react-native-true-sheet": "*",
     "expo-image": "*",
+    "expo-squircle-view": "*",
     "lucide-react-native": "*",
     "react": "*",
     "react-native": "*",
@@ -22,6 +23,7 @@
     "@lodev09/react-native-true-sheet": "^3.11.11",
     "@types/react": "~19.2.2",
     "expo-image": "~57.0.3",
+    "expo-squircle-view": "1.1.0",
     "lucide-react-native": "^1.31.0",
     "react": "19.2.3",
     "react-native": "0.86.2",
