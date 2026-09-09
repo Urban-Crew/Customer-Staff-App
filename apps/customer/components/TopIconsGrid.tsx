@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { SquircleView } from 'expo-squircle-view';
 import { SvgUri } from 'react-native-svg';
 import { spacing, Text, useTheme } from '@ub/ui';
 import type { HomeTopIcon } from '@ub/shared-types';
@@ -43,9 +44,12 @@ export function TopIconsGrid({ topIcons }: TopIconsGridProps) {
       {sorted.map((item) => (
         <View key={item.id} style={styles.cell}>
           <Pressable hitSlop={4} style={styles.cellContent}>
-            <View style={[styles.iconChip, { backgroundColor: colors.surfaceSubtle }]}>
+            <SquircleView
+              cornerSmoothing={100}
+              style={[styles.iconChip, { backgroundColor: colors.surfaceSubtle }]}
+            >
               <EntityIcon uri={item.entity.iconUrl} color={colors.ink} />
-            </View>
+            </SquircleView>
             <Text numberOfLines={2} style={[styles.label, { color: colors.ink }]}>
               {item.entity.name}
             </Text>
@@ -55,9 +59,12 @@ export function TopIconsGrid({ topIcons }: TopIconsGridProps) {
 
       <View style={styles.cell}>
         <Pressable hitSlop={4} style={styles.cellContent} onPress={() => router.push('/services')}>
-          <View style={[styles.iconChip, { backgroundColor: colors.surfaceSubtle }]}>
+          <SquircleView
+            cornerSmoothing={100}
+            style={[styles.iconChip, { backgroundColor: colors.surfaceSubtle }]}
+          >
             <Feather name="grid" size={ICON_SIZE - 2} color={colors.ink} />
-          </View>
+          </SquircleView>
           <Text numberOfLines={2} style={[styles.label, { color: colors.ink }]}>
             All Services
           </Text>
