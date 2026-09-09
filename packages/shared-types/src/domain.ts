@@ -22,4 +22,8 @@ export interface Service {
   id: string;
   name: string;
   imageUrl: string;
+  /** Average rating out of 5, when the API provides one. */
+  rating?: number;
+  /** Flags the service for the "Top Rated" badge, when the API provides one. */
+  topRated?: boolean;
 }

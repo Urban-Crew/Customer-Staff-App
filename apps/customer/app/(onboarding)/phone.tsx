@@ -4,7 +4,6 @@ import { Image, Linking, Text } from 'react-native';
 import { Checkbox, OnboardingLayout, PhoneInput, useTheme, useToast } from '@ub/ui';
 import { describeOtpError, toE164 } from '../../lib/otp';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
-import { useOnboardingStore } from '../../lib/store/onboardingStore';
 import { useSendOtp } from '../../services/otp.service';
 
 const TERMS_URL = 'https://ubcrew.in/terms';
@@ -18,7 +17,6 @@ export default function PhoneScreen() {
   const setCountryCode = useOnboardingFlowStore((s) => s.setCountryCode);
   const setPhone = useOnboardingFlowStore((s) => s.setPhone);
   const setOtpRequest = useOnboardingFlowStore((s) => s.setOtpRequest);
-  const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const sendOtp = useSendOtp();
   const [usesWhatsapp, setUsesWhatsapp] = useState(false);
 
@@ -41,9 +39,11 @@ export default function PhoneScreen() {
     );
   };
 
-  const handleSkip = async () => {
-    await completeOnboarding();
-    router.replace('/');
+  // Skipping phone/OTP entirely still needs a location before landing on
+  // home — location-confirm is what actually marks onboarding complete,
+  // same as the regular verified-login path.
+  const handleSkip = () => {
+    router.push('/(onboarding)/location-choice');
   };
 
   return (

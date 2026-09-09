@@ -5,6 +5,7 @@ export * from './Checkbox';
 export * from './GlassSurface';
 export * from './IconButton';
 export * from './Input';
+export * from './LongArrow';
 export * from './OnboardingLayout';
 export * from './OtpInput';
 export * from './PhoneInput';

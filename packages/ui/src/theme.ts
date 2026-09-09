@@ -37,6 +37,8 @@ export interface ThemeColors {
   error: string;
   /** Status accent for success states (toasts, confirmations) — same tone in both schemes. */
   success: string;
+  /** Brand amber accent (ratings, highlights) — same tone in both schemes. */
+  accent: string;
 }
 
 /** Light palette — cobalt/navy ubcrew brand tokens. Used when the system is in light mode. */
@@ -71,6 +73,7 @@ export const lightColors: ThemeColors = {
 
   error: '#E5484D',
   success: '#22B36B',
+  accent: '#FFA733',
 };
 
 
@@ -105,6 +108,7 @@ export const darkColors: ThemeColors = {
 
   error: '#FF6B6B',
   success: '#22B36B',
+  accent: '#FFA733',
 };
 
 /** @deprecated Use `lightColors` (or `useTheme()` for the active scheme's palette). Kept for existing static imports. */

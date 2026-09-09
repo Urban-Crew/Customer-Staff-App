@@ -18,6 +18,7 @@ import {
   LocationError,
   type LocationErrorReason,
 } from '../../lib/location';
+import { useAuthStore } from '../../lib/store/authStore';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
 import { useLocationStore } from '../../lib/store/locationStore';
@@ -47,6 +48,8 @@ export default function LocationConfirmScreen() {
   const setAddress = useOnboardingFlowStore((s) => s.setAddress);
   const resetFlow = useOnboardingFlowStore((s) => s.reset);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const continueAsGuest = useAuthStore((s) => s.continueAsGuest);
   const setSelectedLocation = useLocationStore((s) => s.setAddress);
   const reverseGeocode = useReverseGeocode();
   const [phase, setPhase] = useState<Phase>('fetching');
@@ -104,12 +107,24 @@ export default function LocationConfirmScreen() {
     if (phase !== 'confirmed') return;
     const timer = setTimeout(async () => {
       if (address) await setSelectedLocation(address);
+      // Reached here via Skip on the phone screen (no OTP verified) — mark
+      // the device as a guest so next launch skips straight past login too,
+      // same as a verified session would.
+      if (!isAuthenticated) await continueAsGuest();
       await completeOnboarding();
       resetFlow();
       router.replace('/');
     }, 1200);
     return () => clearTimeout(timer);
-  }, [phase, address, completeOnboarding, resetFlow, setSelectedLocation]);
+  }, [
+    phase,
+    address,
+    completeOnboarding,
+    resetFlow,
+    setSelectedLocation,
+    isAuthenticated,
+    continueAsGuest,
+  ]);
 
   return (
     <SafeAreaView

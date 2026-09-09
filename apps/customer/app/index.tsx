@@ -1,42 +1,78 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { router, Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { MapPin, Search, UserRound } from 'lucide-react-native';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconButton, radii, SplashScreen, spacing, Text, useTheme } from '@ub/ui';
+import { MapPin } from 'lucide-react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { runOnJS, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { SplashScreen, spacing, Text, useTheme } from '@ub/ui';
 import type { SelectedAddress } from '../lib/store/locationStore';
 import { AddressSheet } from '../components/AddressSheet';
-import { AnimatedSearchPlaceholder } from '../components/AnimatedSearchPlaceholder';
+import { HomeSearchRow } from '../components/HomeSearchRow';
 import { ServiceList } from '../components/ServiceList';
-import { useAuthStore } from '../lib/store/authStore';
 import { useLocationStore } from '../lib/store/locationStore';
 import { useOnboardingStore } from '../lib/store/onboardingStore';
 
+// Scroll offset (px) past which the address row has scrolled out and the
+// floating search bar should be fully visible/interactive. Crossfades over
+// a small range leading up to it, rather than popping in at one instant.
+const FLOAT_THRESHOLD = 40;
+const FLOAT_FADE_RANGE = 16;
+
 export default function HomeScreen() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const hasOnboarded = useOnboardingStore((s) => s.hasOnboarded);
   const isOnboardingHydrating = useOnboardingStore((s) => s.isHydrating);
   const hydrateOnboarding = useOnboardingStore((s) => s.hydrate);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const selectedAddress = useLocationStore((s) => s.address);
   const hydrateLocation = useLocationStore((s) => s.hydrate);
   const setSelectedAddress = useLocationStore((s) => s.setAddress);
   const addressSheetRef = useRef<BottomSheetModal>(null);
+
+  const scrollY = useSharedValue(0);
+  const floatingShown = useSharedValue(false);
+  const [floatingVisible, setFloatingVisible] = useState(false);
 
   useEffect(() => {
     hydrateOnboarding();
     hydrateLocation();
   }, [hydrateOnboarding, hydrateLocation]);
 
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+    const shouldShow = event.contentOffset.y > FLOAT_THRESHOLD;
+    if (shouldShow !== floatingShown.value) {
+      floatingShown.value = shouldShow;
+      runOnJS(setFloatingVisible)(shouldShow);
+    }
+  });
+
+  const floatingStyle = useAnimatedStyle(() => {
+    const start = FLOAT_THRESHOLD - FLOAT_FADE_RANGE;
+    const raw = (scrollY.value - start) / FLOAT_FADE_RANGE;
+    const progress = Math.min(1, Math.max(0, raw));
+    return {
+      opacity: progress,
+      transform: [{ translateY: (1 - progress) * -6 }],
+    };
+  });
+
+
+  const inlineNavStyle = useAnimatedStyle(() => {
+    const start = FLOAT_THRESHOLD - FLOAT_FADE_RANGE;
+    const raw = (scrollY.value - start) / FLOAT_FADE_RANGE;
+    const progress = Math.min(1, Math.max(0, raw));
+    return { opacity: 1 - progress };
+  });
+
   if (isOnboardingHydrating) {
     return <SplashScreen logo={require('../assets/splash-icon.png')} loading />;
   }
 
-  // Onboarding also covers phone/OTP login, so an incomplete session sends
-  // the user back there whether they've never onboarded or have logged out.
-  if (!hasOnboarded || !isAuthenticated) {
+
+  if (!hasOnboarded) {
     return <Redirect href="/(onboarding)/phone" />;
   }
 
@@ -50,42 +86,56 @@ export default function HomeScreen() {
       <StatusBar style="light" />
       <View style={[styles.backdrop, { backgroundColor: colors.primary }]} />
 
-      <SafeAreaView edges={['top']}>
-        <Pressable
-          style={({ pressed }) => [styles.locationRow, pressed && styles.pressed]}
-          onPress={() => addressSheetRef.current?.present()}
-          hitSlop={8}
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <Animated.ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
         >
-          <MapPin size={16} color="#fff" />
-          <Text fontWeight="600" style={styles.locationLabel} numberOfLines={1}>
-            {selectedAddress?.formattedAddress ?? 'Select delivery address'}
-          </Text>
-        </Pressable>
-        <View style={styles.navRow}>
           <Pressable
-            style={[styles.searchBar, { backgroundColor: colors.inputBg }]}
-            onPress={() => router.push('/search')}
+            style={({ pressed }) => [styles.locationRow, pressed && styles.pressed]}
+            onPress={() => addressSheetRef.current?.present()}
+            hitSlop={8}
           >
-            <Search size={18} color={'#000'} />
-            <AnimatedSearchPlaceholder color={colors.placeholder} />
+            <MapPin size={16} color="#fff" />
+            <Text fontWeight="600" style={styles.locationLabel} numberOfLines={1}>
+              {selectedAddress?.formattedAddress ?? 'Select delivery address'}
+            </Text>
           </Pressable>
-          <IconButton
-            variant="plain"
-            style={[
-              styles.profileButton,
-              { backgroundColor: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.6)' },
-            ]}
-            onPress={() => router.push('/profile')}
-          >
-            <UserRound size={22} color="#fff" />
-          </IconButton>
-        </View>
+
+          <Animated.View style={[styles.navRow, inlineNavStyle]}>
+            <HomeSearchRow
+              onPressSearch={() => router.push('/search')}
+              onPressProfile={() => router.push('/profile')}
+            />
+          </Animated.View>
+
+          <View style={styles.horizontalListWrap}>
+            <ServiceList onDark />
+          </View>
+          <View style={[styles.body, { backgroundColor: colors.background }]}>
+            <ServiceList layout="vertical" title="All Services" />
+          </View>
+        </Animated.ScrollView>
       </SafeAreaView>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        <ServiceList onDark />
-        <View style={[styles.body, { backgroundColor: colors.background }]} />
-      </ScrollView>
+      <Animated.View
+        pointerEvents={floatingVisible ? 'auto' : 'none'}
+        style={[
+          styles.floatingHeader,
+          floatingStyle,
+          { paddingTop: insets.top, backgroundColor: colors.primary },
+        ]}
+      >
+        <View style={styles.navRow}>
+          <HomeSearchRow
+            onPressSearch={() => router.push('/search')}
+            onPressProfile={() => router.push('/profile')}
+          />
+        </View>
+      </Animated.View>
 
       <AddressSheet ref={addressSheetRef} onSelect={handleSelectAddress} />
     </View>
@@ -110,25 +160,18 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
     marginTop: spacing.sm,
   },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    borderRadius: radii.pill,
-    paddingHorizontal: 16,
-    height: 48,
-  },
-  profileButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-  },
+  safeArea: { flex: 1 },
   scroll: { flex: 1 },
-  scrollContent: { paddingTop: spacing.lg, flexGrow: 1 },
-  body: { flex: 1, minHeight: 400 },
+  scrollContent: { flexGrow: 1 },
+  horizontalListWrap: { marginTop: spacing.lg },
+  body: { flex: 1, minHeight: 400, paddingTop: spacing.lg },
+  floatingHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
 });
