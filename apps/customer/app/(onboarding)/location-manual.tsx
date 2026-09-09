@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ChevronLeft, Lightbulb, LocateFixed, MapPin } from 'lucide-react-native';
+import { Lightbulb, LocateFixed, MapPin } from 'lucide-react-native';
 import {
   ActivityIndicator,
   Pressable,
@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconButton, radii, spacing, useTheme } from '@ub/ui';
+import { BackButton, radii, spacing, useTheme } from '@ub/ui';
 import type { PlaceSuggestion } from '@ub/shared-types';
 import { describeLocationError } from '../../services/location.service';
 import { usePlacesAutocomplete } from '../../hooks/usePlacesAutocomplete';
@@ -49,9 +49,7 @@ export default function LocationManualScreen() {
       <StatusBar style="light" />
       <SafeAreaView style={[styles.topBar, { backgroundColor: colors.primary }]} edges={['top']}>
         <View style={styles.topBarRow}>
-          <IconButton variant="plain" onPress={() => router.back()}>
-            <ChevronLeft size={24} color={colors.primaryText} />
-          </IconButton>
+          <BackButton onPress={() => router.back()} color={colors.primaryText} />
           <TextInput
             value={query}
             onChangeText={setQuery}

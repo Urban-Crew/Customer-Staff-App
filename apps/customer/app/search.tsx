@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { ChevronLeft, Search as SearchIcon } from 'lucide-react-native';
+import { Search as SearchIcon } from 'lucide-react-native';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconButton, radii, spacing, Text, useTheme } from '@ub/ui';
+import { BackButton, radii, spacing, Text, useTheme } from '@ub/ui';
 
 export default function SearchScreen() {
   const { colors } = useTheme();
@@ -12,9 +12,7 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
       <View style={styles.topRow}>
-        <IconButton variant="plain" onPress={() => router.back()}>
-          <ChevronLeft size={24} color={colors.ink} />
-        </IconButton>
+        <BackButton onPress={() => router.back()} color={colors.ink} />
         <View
           style={[
             styles.searchBar,

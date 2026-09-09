@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { router } from 'expo-router';
-import { Linking, Text } from 'react-native';
-import { OnboardingLayout, PhoneInput, useTheme, useToast } from '@ub/ui';
+import { Image, Linking, Text } from 'react-native';
+import { Checkbox, OnboardingLayout, PhoneInput, useTheme, useToast } from '@ub/ui';
 import { describeOtpError, toE164 } from '../../lib/otp';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
@@ -19,13 +20,14 @@ export default function PhoneScreen() {
   const setOtpRequest = useOnboardingFlowStore((s) => s.setOtpRequest);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const sendOtp = useSendOtp();
+  const [usesWhatsapp, setUsesWhatsapp] = useState(false);
 
   const canContinue = phone.trim().length >= 7;
 
   const handleContinue = () => {
     if (!canContinue || sendOtp.isPending) return;
     sendOtp.mutate(
-      { phone: toE164(countryCode, phone) },
+      { phone: toE164(countryCode, phone), channel: usesWhatsapp ? 'wapp' : undefined },
       {
         onSuccess: ({ requestId, resendAvailableInSeconds }) => {
           setOtpRequest(requestId, resendAvailableInSeconds);
@@ -81,6 +83,18 @@ export default function PhoneScreen() {
         value={phone}
         onChangeText={setPhone}
         autoFocus
+      />
+      <Checkbox
+        checked={usesWhatsapp}
+        onChange={setUsesWhatsapp}
+        icon={
+          <Image
+            source={require('../../assets/whatsapp.png')}
+            style={{ width: 18, height: 18 }}
+            resizeMode="contain"
+          />
+        }
+        label="I use WhatsApp on this phone number"
       />
       {sendOtp.error ? (
         <Text style={{ fontSize: 13, color: colors.error }}>{describeOtpError(sendOtp.error)}</Text>

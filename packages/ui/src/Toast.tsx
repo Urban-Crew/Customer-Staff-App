@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import Animated, {
   Easing,
   LinearTransition,
@@ -142,11 +143,15 @@ export function ToastHost({ onDismiss }: ToastHostProps) {
   if (toasts.length === 0) return null;
 
   return (
-    <View pointerEvents="box-none" style={[styles.host, { bottom: insets.bottom + spacing.md }]}>
+    <KeyboardStickyView
+      pointerEvents="box-none"
+      offset={{ opened: -spacing.sm }}
+      style={[styles.host, { bottom: insets.bottom + spacing.md }]}
+    >
       {toasts.map((toast) => (
         <ToastPill key={toast.id} toast={toast} onDismiss={onDismiss} />
       ))}
-    </View>
+    </KeyboardStickyView>
   );
 }
 

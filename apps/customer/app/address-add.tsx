@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ChevronLeft, MapPin } from 'lucide-react-native';
+import { MapPin } from 'lucide-react-native';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconButton, radii, spacing, useTheme } from '@ub/ui';
+import { BackButton, radii, spacing, useTheme } from '@ub/ui';
 import type { PlaceSuggestion, ResolvedAddress } from '@ub/shared-types';
 import { describeLocationError } from '../services/location.service';
 import { usePlacesAutocomplete } from '../hooks/usePlacesAutocomplete';
@@ -82,9 +82,7 @@ export default function AddressAddScreen() {
       <StatusBar style="light" />
       <SafeAreaView style={[styles.topBar, { backgroundColor: colors.primary }]} edges={['top']}>
         <View style={styles.topBarRow}>
-          <IconButton variant="plain" onPress={() => router.back()}>
-            <ChevronLeft size={24} color="#fff" />
-          </IconButton>
+          <BackButton onPress={() => router.back()} color="#fff" />
           <TextInput
             value={query}
             onChangeText={(text) => {

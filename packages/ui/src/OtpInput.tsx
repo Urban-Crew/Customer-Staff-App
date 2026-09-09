@@ -8,7 +8,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { cardStyle, useTheme } from './theme';
+import { cardStyle, useTheme, withAlpha } from './theme';
 
 export interface OtpInputProps {
   length?: number;
@@ -36,7 +36,6 @@ export function OtpInput({
     <Pressable style={[styles.row, style]} onPress={() => editable && inputRef.current?.focus()}>
       {Array.from({ length }).map((_, index) => {
         const isCurrent = focused && index === activeIndex;
-        const hasVal = Boolean(value[index]);
 
         return (
           <View
@@ -46,7 +45,10 @@ export function OtpInput({
               styles.box,
               {
                 backgroundColor: colors.inputBg,
-                borderColor: isCurrent || hasVal ? colors.inputBorderFocused : colors.inputBorder,
+                borderColor: isCurrent ? colors.inputBorderFocused : colors.inputBorder,
+              },
+              isCurrent && {
+                boxShadow: `0px 0px 0px 4px ${withAlpha(colors.inputBorderFocused, 0.22)}`,
               },
             ]}
           >

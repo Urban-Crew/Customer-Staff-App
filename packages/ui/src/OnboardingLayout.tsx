@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { BackButton } from './BackButton';
 import { Button, type ButtonProps } from './Button';
-import { IconButton } from './IconButton';
 import { Text } from './Text';
 import { spacing, useTheme } from './theme';
 
@@ -42,9 +41,7 @@ export function OnboardingLayout({
         <View style={styles.topNav}>
           <View style={styles.navLeft}>
             {onBack ? (
-              <IconButton onPress={onBack}>
-                <ChevronLeft size={22} color={colors.ink} />
-              </IconButton>
+              <BackButton onPress={onBack} />
             ) : (
               <View style={styles.navSpacer} />
             )}

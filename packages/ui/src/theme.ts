@@ -73,11 +73,7 @@ export const lightColors: ThemeColors = {
   success: '#22B36B',
 };
 
-/**
- * Dark palette — same cobalt/navy brand, dark surfaces. Mirrors the dark
- * tokens from the ubcrew brand-system mockup (navy 950 canvas, cobalt 500
- * brand). Used when the system is in dark mode.
- */
+
 export const darkColors: ThemeColors = {
   background: '#050A16',
   surface: '#0A1426',

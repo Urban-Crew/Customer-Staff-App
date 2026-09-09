@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { ChevronLeft, LogOut, UserRound } from 'lucide-react-native';
+import { LogOut, UserRound } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, IconButton, spacing, useTheme } from '@ub/ui';
+import { BackButton, Button, spacing, useTheme } from '@ub/ui';
 import type { AuthUser, OtpAuthUser } from '@ub/shared-types';
 import { Text } from '../components';
 import { useAuthStore } from '../lib/store/authStore';
@@ -44,9 +44,7 @@ export default function ProfileScreen() {
       edges={['top', 'bottom']}
     >
       <View style={styles.topNav}>
-        <IconButton onPress={() => router.back()}>
-          <ChevronLeft size={22} color={colors.ink} />
-        </IconButton>
+        <BackButton onPress={() => router.back()} color={colors.ink} />
       </View>
 
       <View style={styles.content}>

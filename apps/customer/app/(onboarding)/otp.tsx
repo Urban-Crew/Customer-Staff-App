@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { Clock } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
-import { Button, OnboardingLayout, OtpInput, useTheme } from '@ub/ui';
+import { Clock, MessageSquare } from 'lucide-react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { Button, OnboardingLayout, OtpInput, useTheme, useToast } from '@ub/ui';
 import type { OtpChannel } from '@ub/shared-types';
 import { describeOtpError, toE164 } from '../../lib/otp';
 import { useAuthStore } from '../../lib/store/authStore';
@@ -11,6 +11,7 @@ import { useResendOtp, useVerifyOtp } from '../../services/otp.service';
 
 export default function OtpScreen() {
   const { colors } = useTheme();
+  const { showSuccess, showError } = useToast();
   const countryCode = useOnboardingFlowStore((s) => s.countryCode);
   const phone = useOnboardingFlowStore((s) => s.phone);
   const requestId = useOnboardingFlowStore((s) => s.requestId);
@@ -60,6 +61,10 @@ export default function OtpScreen() {
         onSuccess: (result) => {
           setOtpRequest(result.requestId, result.resendAvailableInSeconds);
           setSecondsLeft(result.resendAvailableInSeconds);
+          showSuccess(channel === 'wapp' ? 'Code resent on WhatsApp.' : 'Code resent via SMS.');
+        },
+        onError: (err) => {
+          showError(describeOtpError(err));
         },
       },
     );
@@ -107,6 +112,7 @@ export default function OtpScreen() {
               variant="secondary"
               size="sm"
               fullWidth={false}
+              icon={<MessageSquare size={16} color={colors.secondaryText} />}
               onPress={() => handleResend('sms')}
               disabled={busy}
               loading={resendOtp.isPending && resendOtp.variables?.channel === 'sms'}
@@ -116,6 +122,13 @@ export default function OtpScreen() {
               variant="secondary"
               size="sm"
               fullWidth={false}
+              icon={
+                <Image
+                  source={require('../../assets/whatsapp.png')}
+                  style={{ width: 16, height: 16 }}
+                  resizeMode="contain"
+                />
+              }
               onPress={() => handleResend('wapp')}
               disabled={busy}
               loading={resendOtp.isPending && resendOtp.variables?.channel === 'wapp'}

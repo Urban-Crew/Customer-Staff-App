@@ -7,10 +7,12 @@ export interface CheckboxProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label?: ReactNode;
+  /** Optional leading visual (e.g. a brand icon/logo) shown before the label text. */
+  icon?: ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
-export function Checkbox({ checked, onChange, label, style }: CheckboxProps) {
+export function Checkbox({ checked, onChange, label, icon, style }: CheckboxProps) {
   const { colors } = useTheme();
 
   return (
@@ -32,7 +34,12 @@ export function Checkbox({ checked, onChange, label, style }: CheckboxProps) {
       >
         {checked ? <Check size={13} color={colors.primaryText} strokeWidth={3} /> : null}
       </View>
-      {label ? <Text style={[styles.label, { color: colors.inkMuted }]}>{label}</Text> : null}
+      {label || icon ? (
+        <View style={styles.labelRow}>
+          {icon}
+          {label ? <Text style={[styles.label, { color: colors.inkMuted }]}>{label}</Text> : null}
+        </View>
+      ) : null}
     </Pressable>
   );
 }
@@ -54,6 +61,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
+  },
+  labelRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   label: {
     flex: 1,
