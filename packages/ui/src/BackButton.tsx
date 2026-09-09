@@ -4,17 +4,12 @@ import { useTheme } from './theme';
 
 export interface BackButtonProps {
   onPress?: () => void;
-  /** Icon color. Defaults to the theme's ink color — pass an explicit color when placed over a photo/brand-color backdrop. */
   color?: string;
   size?: number;
   style?: StyleProp<ViewStyle>;
 }
 
-/**
- * Plain back-navigation affordance: a long-tailed arrow (long shaft, small
- * head — lucide's ArrowLeft has a fixed 1:1 shaft/head split, so this is a
- * custom path), no button chrome or container around it.
- */
+
 export function BackButton({ onPress, color, size = 24, style }: BackButtonProps) {
   const { colors } = useTheme();
 
