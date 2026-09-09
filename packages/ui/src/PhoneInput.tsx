@@ -76,7 +76,7 @@ export function PhoneInput({
         <ChevronDown size={16} color={colors.inkMuted} />
       </Pressable>
 
-      <View style={[styles.divider, { backgroundColor: colors.hairline }]} />
+      <View style={[styles.divider, { backgroundColor: colors.inputBorder }]} />
 
       <TextInput
         value={value}
