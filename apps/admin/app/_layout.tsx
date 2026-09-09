@@ -40,7 +40,7 @@ export default function RootLayout() {
             <ToastProvider>
               <QueryClientProvider client={queryClient}>
                 <Stack screenOptions={{ headerShown: false }} />
-                <StatusBar style="auto" />
+                <StatusBar style="dark" />
               </QueryClientProvider>
             </ToastProvider>
           </ThemeProvider>

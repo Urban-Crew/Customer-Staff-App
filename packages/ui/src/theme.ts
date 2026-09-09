@@ -35,84 +35,51 @@ export interface ThemeColors {
   placeholder: string;
 
   error: string;
-  /** Status accent for success states (toasts, confirmations) — same tone in both schemes. */
+  /** Status accent for success states (toasts, confirmations). */
   success: string;
-  /** Brand amber accent (ratings, highlights) — same tone in both schemes. */
+  /** Brand yellow accent (ratings, badges, highlights) — Urban Company–style. */
   accent: string;
 }
 
-/** Light palette — cobalt/navy ubcrew brand tokens. Used when the system is in light mode. */
-export const lightColors: ThemeColors = {
-  background: '#F7F9FC',
+/**
+ * Single, fixed palette — no light/dark mode. Urban-Company-inspired: black
+ * ink/CTAs on a white surface, with a signature yellow accent for ratings
+ * and badges. (Approximated from general knowledge of their brand, not
+ * scraped exact values — swap these for real brand hex codes if you have them.)
+ */
+export const colors: ThemeColors = {
+  background: '#FFFFFF',
   surface: '#FFFFFF',
-  surfaceSubtle: '#EEF2F8',
-  ink: '#12172A',
-  inkMuted: '#4C5670',
-  inkFaint: '#6B7690',
+  surfaceSubtle: '#F5F5F7',
+  ink: '#14141A',
+  inkMuted: '#6E6E76',
+  inkFaint: '#9C9CA3',
 
-  border: '#E1E7F0',
-  hairline: '#EEF2F8',
+  border: '#E6E6E9',
+  hairline: '#EFEFF1',
 
-  primary: '#2F5FFF',
-  primaryPressed: '#1533AD',
+  primary: '#14141A',
+  primaryPressed: '#000000',
   primaryText: '#FFFFFF',
 
   secondaryBg: '#FFFFFF',
-  secondaryBorder: '#E1E7F0',
-  secondaryPressed: '#EEF2F8',
-  secondaryText: '#12172A',
+  secondaryBorder: '#E6E6E9',
+  secondaryPressed: '#F5F5F7',
+  secondaryText: '#14141A',
 
-  disabledBg: '#EEF2F8',
-  disabledBorder: '#EEF2F8',
-  disabledText: '#C7D0E0',
+  disabledBg: '#F0F0F2',
+  disabledBorder: '#F0F0F2',
+  disabledText: '#B4B4BA',
 
-  inputBg: '#FFFFFF',
-  inputBorder: '#E1E7F0',
-  inputBorderFocused: '#2F5FFF',
-  placeholder: '#6B7690',
+  inputBg: '#F5F5F7',
+  inputBorder: '#E6E6E9',
+  inputBorderFocused: '#14141A',
+  placeholder: '#9C9CA3',
 
-  error: '#E5484D',
-  success: '#22B36B',
-  accent: '#FFA733',
+  error: '#E1523D',
+  success: '#1BA672',
+  accent: '#FFC900',
 };
-
-
-export const darkColors: ThemeColors = {
-  background: '#050A16',
-  surface: '#0A1426',
-  surfaceSubtle: '#101D35',
-  ink: '#FFFFFF',
-  inkMuted: '#C7D0E0',
-  inkFaint: '#98A3BD',
-
-  border: '#253A5E',
-  hairline: '#182948',
-
-  primary: '#4C81FF',
-  primaryPressed: '#2F5FFF',
-  primaryText: '#FFFFFF',
-
-  secondaryBg: '#0A1426',
-  secondaryBorder: '#253A5E',
-  secondaryPressed: '#182948',
-  secondaryText: '#FFFFFF',
-
-  disabledBg: '#182948',
-  disabledBorder: '#182948',
-  disabledText: '#98A3BD',
-
-  inputBg: '#0A1426',
-  inputBorder: '#253A5E',
-  inputBorderFocused: '#4C81FF',
-  placeholder: '#98A3BD',
-
-  error: '#FF6B6B',
-  success: '#22B36B',
-  accent: '#FFA733',
-};
-
-/** @deprecated Use `lightColors` (or `useTheme()` for the active scheme's palette). Kept for existing static imports. */
-export const colors = lightColors;
 
 export const radii = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999, squircle: 15 } as const;
 

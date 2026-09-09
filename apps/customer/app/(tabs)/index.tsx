@@ -1,18 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
-import { router, Redirect } from 'expo-router';
+import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { LinearGradient } from 'expo-linear-gradient';
 import { MapPin } from 'lucide-react-native';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { runOnJS, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
-import { SplashScreen, spacing, Text, useTheme } from '@ub/ui';
-import type { SelectedAddress } from '../lib/store/locationStore';
-import { AddressSheet } from '../components/AddressSheet';
-import { HomeSearchRow } from '../components/HomeSearchRow';
-import { ServiceList } from '../components/ServiceList';
-import { useLocationStore } from '../lib/store/locationStore';
-import { useOnboardingStore } from '../lib/store/onboardingStore';
+import Animated, {
+  runOnJS,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
+import { spacing, Text, useTheme } from '@ub/ui';
+import type { HomeHeaderConfig, HomeHeaderGradientDirection } from '@ub/shared-types';
+import type { SelectedAddress } from '../../lib/store/locationStore';
+import { AddressSheet } from '../../components/AddressSheet';
+import { HomeSearchRow } from '../../components/HomeSearchRow';
+import { PromoBanners } from '../../components/PromoBanners';
+import { ServiceList } from '../../components/ServiceList';
+import { useHomeFeed } from '../../hooks/useHomeFeed';
+import { useLocationStore } from '../../lib/store/locationStore';
 
 // Scroll offset (px) past which the address row has scrolled out and the
 // floating search bar should be fully visible/interactive. Crossfades over
@@ -20,12 +28,48 @@ import { useOnboardingStore } from '../lib/store/onboardingStore';
 const FLOAT_THRESHOLD = 40;
 const FLOAT_FADE_RANGE = 16;
 
+const GRADIENT_POINTS: Record<
+  HomeHeaderGradientDirection,
+  { start: { x: number; y: number }; end: { x: number; y: number } }
+> = {
+  LEFT_TO_RIGHT: { start: { x: 0, y: 0.5 }, end: { x: 1, y: 0.5 } },
+  RIGHT_TO_LEFT: { start: { x: 1, y: 0.5 }, end: { x: 0, y: 0.5 } },
+  TOP_TO_BOTTOM: { start: { x: 0.5, y: 0 }, end: { x: 0.5, y: 1 } },
+  BOTTOM_TO_TOP: { start: { x: 0.5, y: 1 }, end: { x: 0.5, y: 0 } },
+  DIAGONAL_TOP_LEFT_TO_BOTTOM_RIGHT: { start: { x: 0, y: 0 }, end: { x: 1, y: 1 } },
+  DIAGONAL_TOP_RIGHT_TO_BOTTOM_LEFT: { start: { x: 1, y: 0 }, end: { x: 0, y: 1 } },
+  DIAGONAL_BOTTOM_LEFT_TO_TOP_RIGHT: { start: { x: 0, y: 1 }, end: { x: 1, y: 0 } },
+  DIAGONAL_BOTTOM_RIGHT_TO_TOP_LEFT: { start: { x: 1, y: 1 }, end: { x: 0, y: 0 } },
+};
+
+/** The color container's fill — a gradient or solid color from the home feed's `header`, falling back to the theme's primary while it loads. */
+function HeaderFill({
+  header,
+  fallback,
+  style,
+}: {
+  header?: HomeHeaderConfig;
+  fallback: string;
+  style: StyleProp<ViewStyle>;
+}) {
+  if (header?.backgroundType === 'GRADIENT' && header.gradientColors && header.gradientColors.length >= 2) {
+    const points = GRADIENT_POINTS[header.gradientDirection ?? 'LEFT_TO_RIGHT'];
+    return (
+      <LinearGradient
+        colors={header.gradientColors as [string, string, ...string[]]}
+        start={points.start}
+        end={points.end}
+        style={style}
+      />
+    );
+  }
+  return <View style={[style, { backgroundColor: header?.solidColor ?? fallback }]} />;
+}
+
 export default function HomeScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const hasOnboarded = useOnboardingStore((s) => s.hasOnboarded);
-  const isOnboardingHydrating = useOnboardingStore((s) => s.isHydrating);
-  const hydrateOnboarding = useOnboardingStore((s) => s.hydrate);
+  const { data: homeFeed } = useHomeFeed();
   const selectedAddress = useLocationStore((s) => s.address);
   const hydrateLocation = useLocationStore((s) => s.hydrate);
   const setSelectedAddress = useLocationStore((s) => s.setAddress);
@@ -36,9 +80,8 @@ export default function HomeScreen() {
   const [floatingVisible, setFloatingVisible] = useState(false);
 
   useEffect(() => {
-    hydrateOnboarding();
     hydrateLocation();
-  }, [hydrateOnboarding, hydrateLocation]);
+  }, [hydrateLocation]);
 
   const scrollHandler = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -59,22 +102,15 @@ export default function HomeScreen() {
     };
   });
 
-
+  // Exact inverse of floatingStyle's opacity, computed from the same
+  // scrollY — so the inline row and the floating copy are never both
+  // (partially) visible at once, in either scroll direction.
   const inlineNavStyle = useAnimatedStyle(() => {
     const start = FLOAT_THRESHOLD - FLOAT_FADE_RANGE;
     const raw = (scrollY.value - start) / FLOAT_FADE_RANGE;
     const progress = Math.min(1, Math.max(0, raw));
     return { opacity: 1 - progress };
   });
-
-  if (isOnboardingHydrating) {
-    return <SplashScreen logo={require('../assets/splash-icon.png')} loading />;
-  }
-
-
-  if (!hasOnboarded) {
-    return <Redirect href="/(onboarding)/phone" />;
-  }
 
   const handleSelectAddress = (address: SelectedAddress) => {
     setSelectedAddress(address);
@@ -84,7 +120,9 @@ export default function HomeScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <StatusBar style="light" />
-      <View style={[styles.backdrop, { backgroundColor: colors.primary }]} />
+      <View style={styles.backdrop}>
+        <HeaderFill header={homeFeed?.header} fallback={colors.primary} style={StyleSheet.absoluteFill} />
+      </View>
 
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <Animated.ScrollView
@@ -108,13 +146,14 @@ export default function HomeScreen() {
           <Animated.View style={[styles.navRow, inlineNavStyle]}>
             <HomeSearchRow
               onPressSearch={() => router.push('/search')}
-              onPressProfile={() => router.push('/profile')}
+              onPressProfile={() => router.push('/account')}
             />
           </Animated.View>
 
-          <View style={styles.horizontalListWrap}>
-            <ServiceList onDark />
+          <View style={styles.bannersWrap}>
+            <PromoBanners banners={homeFeed?.promoBanners ?? []} />
           </View>
+
           <View style={[styles.body, { backgroundColor: colors.background }]}>
             <ServiceList layout="vertical" title="All Services" />
           </View>
@@ -123,16 +162,13 @@ export default function HomeScreen() {
 
       <Animated.View
         pointerEvents={floatingVisible ? 'auto' : 'none'}
-        style={[
-          styles.floatingHeader,
-          floatingStyle,
-          { paddingTop: insets.top, backgroundColor: colors.primary },
-        ]}
+        style={[styles.floatingHeader, floatingStyle, { paddingTop: insets.top }]}
       >
+        <HeaderFill header={homeFeed?.header} fallback={colors.primary} style={StyleSheet.absoluteFill} />
         <View style={styles.navRow}>
           <HomeSearchRow
             onPressSearch={() => router.push('/search')}
-            onPressProfile={() => router.push('/profile')}
+            onPressProfile={() => router.push('/account')}
           />
         </View>
       </Animated.View>
@@ -144,7 +180,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, height: '70%' },
+  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, height: '34%' },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -160,18 +196,18 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-    marginTop: spacing.sm,
+    paddingBottom: spacing.md,
   },
   safeArea: { flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { flexGrow: 1 },
-  horizontalListWrap: { marginTop: spacing.lg },
-  body: { flex: 1, minHeight: 400, paddingTop: spacing.lg },
+  bannersWrap: { marginTop: spacing.md },
+  body: { flex: 1, minHeight: 400, marginTop: spacing.lg, paddingTop: spacing.lg },
   floatingHeader: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
+    overflow: 'hidden',
   },
 });

@@ -3,11 +3,11 @@ import { router } from 'expo-router';
 import { LogOut, UserRound } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BackButton, Button, spacing, useTheme } from '@ub/ui';
+import { Button, spacing, useTheme } from '@ub/ui';
 import type { AuthUser, OtpAuthUser } from '@ub/shared-types';
-import { Text } from '../components';
-import { useAuthStore } from '../lib/store/authStore';
-import { useOnboardingFlowStore } from '../lib/store/onboardingFlowStore';
+import { Text } from '../../components';
+import { useAuthStore } from '../../lib/store/authStore';
+import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 
 function getDisplayName(user: AuthUser | OtpAuthUser | null): string {
   if (!user) return 'Guest';
@@ -17,7 +17,7 @@ function getDisplayName(user: AuthUser | OtpAuthUser | null): string {
   return 'Guest';
 }
 
-export default function ProfileScreen() {
+export default function AccountScreen() {
   const { colors } = useTheme();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
@@ -43,13 +43,18 @@ export default function ProfileScreen() {
       style={[styles.root, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      <View style={styles.topNav}>
-        <BackButton onPress={() => router.back()} color={colors.ink} />
-      </View>
+      <Text variant="heading" fontWeight="700" style={[styles.title, { color: colors.ink }]}>
+        Account
+      </Text>
 
       <View style={styles.content}>
         <View style={styles.identity}>
-          <View style={[styles.avatar, { backgroundColor: colors.secondaryBg, borderColor: colors.secondaryBorder }]}>
+          <View
+            style={[
+              styles.avatar,
+              { backgroundColor: colors.secondaryBg, borderColor: colors.secondaryBorder },
+            ]}
+          >
             <UserRound size={28} color={colors.ink} />
           </View>
           <Text variant="heading" fontWeight="700" style={[styles.name, { color: colors.ink }]}>
@@ -76,11 +81,10 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  topNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  title: {
+    fontSize: 22,
     paddingHorizontal: spacing.lg,
-    minHeight: 56,
+    paddingTop: spacing.sm,
   },
   content: {
     flex: 1,

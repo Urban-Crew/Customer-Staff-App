@@ -14,30 +14,35 @@ export interface ServiceListProps {
   onDark?: boolean;
   layout?: 'horizontal' | 'vertical';
   title?: string;
+  /** Set false when the screen already has its own page heading (e.g. the Services tab). */
+  showTitle?: boolean;
 }
 
 export function ServiceList({
   onDark = false,
   layout = 'horizontal',
   title = 'SERVICES AT A GLANCE',
+  showTitle = true,
 }: ServiceListProps) {
   const { colors } = useTheme();
   const { data: services, isLoading } = useServices();
 
   return (
     <View style={{ marginBottom: spacing.lg }}>
-      <Text
-        variant="heading"
-        fontWeight="700"
-        numberOfLines={1}
-        style={[
-          styles.title,
-          layout === 'vertical' && styles.titleVertical,
-          { color: onDark ? '#fff' : colors.ink },
-        ]}
-      >
-        {title}
-      </Text>
+      {showTitle ? (
+        <Text
+          variant="heading"
+          fontWeight="700"
+          numberOfLines={1}
+          style={[
+            styles.title,
+            layout === 'vertical' && styles.titleVertical,
+            { color: onDark ? '#fff' : colors.ink },
+          ]}
+        >
+          {title}
+        </Text>
+      ) : null}
 
       {isLoading ? (
         <View style={styles.loadingRow}>
