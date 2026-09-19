@@ -39,11 +39,31 @@ export function TopIconsGrid({ topIcons }: TopIconsGridProps) {
   const { colors } = useTheme();
   const sorted = [...topIcons].sort((a, b) => a.displayOrder - b.displayOrder);
 
+  const handleItemPress = (item: HomeTopIcon) => {
+    if (item.entityType === 'SERVICE' || item.entityType === 'SERVICE_VARIANT') {
+      router.push({
+        pathname: '/services',
+        params: { serviceId: item.entityId },
+      });
+    } else if (item.entityType === 'CATEGORY' || item.entityType === 'SUB_CATEGORY') {
+      router.push({
+        pathname: '/services',
+        params: { categoryName: item.entity.name },
+      });
+    } else {
+      router.push('/services');
+    }
+  };
+
   return (
     <View style={styles.grid}>
       {sorted.map((item) => (
         <View key={item.id} style={styles.cell}>
-          <Pressable hitSlop={4} style={styles.cellContent}>
+          <Pressable
+            hitSlop={4}
+            style={({ pressed }) => [styles.cellContent, pressed && { opacity: 0.7 }]}
+            onPress={() => handleItemPress(item)}
+          >
             <SquircleView
               cornerSmoothing={100}
               style={[styles.iconChip, { backgroundColor: colors.surfaceSubtle }]}

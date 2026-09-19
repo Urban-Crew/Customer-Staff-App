@@ -2,9 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import type { AuthUser, LoginResponse, OtpAuthTokens, OtpAuthUser } from '@ub/shared-types';
 import { apiClient, setAuthFailureListener } from '../apiClient';
+import { queryClient } from '../queryClient';
 import { secureTokenStorage } from '../tokenStorage';
+import { useLocationStore } from './locationStore';
 
 const GUEST_STORAGE_KEY = 'ub-customer-guest';
+const USER_STORAGE_KEY = 'ub-customer-user';
 
 interface AuthState {
   user: AuthUser | OtpAuthUser | null;
@@ -32,11 +35,19 @@ export const useAuthStore = create<AuthState>((set) => ({
   isHydrating: true,
 
   hydrate: async () => {
-    const [tokens, guestFlag] = await Promise.all([
+    const [tokens, guestFlag, userJson] = await Promise.all([
       secureTokenStorage.getTokens(),
       AsyncStorage.getItem(GUEST_STORAGE_KEY),
+      AsyncStorage.getItem(USER_STORAGE_KEY),
     ]);
-    set({ isAuthenticated: !!tokens, isGuest: guestFlag === 'true', isHydrating: false });
+    const user = userJson ? (JSON.parse(userJson) as AuthUser | OtpAuthUser) : null;
+    const isAuthenticated = !!tokens;
+    set({
+      user,
+      isAuthenticated,
+      isGuest: !isAuthenticated && guestFlag === 'true',
+      isHydrating: false,
+    });
   },
 
   login: async (email, password) => {
@@ -45,7 +56,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       password,
     });
     await secureTokenStorage.setTokens(data.tokens);
-    await AsyncStorage.removeItem(GUEST_STORAGE_KEY);
+    await Promise.all([
+      AsyncStorage.removeItem(GUEST_STORAGE_KEY),
+      AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user)),
+    ]);
     set({ user: data.user, isAuthenticated: true, isGuest: false });
   },
 
@@ -57,7 +71,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       refreshToken: tokens.refreshToken,
       expiresAt: Date.now() + tokens.expiresIn * 1000,
     });
-    await AsyncStorage.removeItem(GUEST_STORAGE_KEY);
+    await Promise.all([
+      AsyncStorage.removeItem(GUEST_STORAGE_KEY),
+      AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user)),
+    ]);
     set({ user, isAuthenticated: true, isNewUser, isGuest: false });
   },
 
@@ -68,7 +85,14 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     await secureTokenStorage.setTokens(null);
-    await AsyncStorage.removeItem(GUEST_STORAGE_KEY);
+    await Promise.all([
+      AsyncStorage.removeItem(GUEST_STORAGE_KEY),
+      AsyncStorage.removeItem(USER_STORAGE_KEY),
+      AsyncStorage.removeItem('ub-customer-selected-location'),
+      AsyncStorage.removeItem('ub-customer-onboarded'),
+    ]);
+    await useLocationStore.getState().clearAddress();
+    queryClient.clear();
     set({ user: null, isAuthenticated: false, isNewUser: false, isGuest: false });
   },
 }));

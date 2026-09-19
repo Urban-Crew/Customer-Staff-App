@@ -22,10 +22,15 @@ export const apiClient = createApiClient({
   tokenStorage: secureTokenStorage,
   enableLogging: __DEV__,
   async refreshTokens(refreshToken) {
-    const { data } = await axios.post<AuthTokens>(`${API_URL}/auth/refresh`, {
+    const res = await axios.post(`${API_URL}/api/v1/auth/token/refresh`, {
       refreshToken,
     });
-    return data;
+    const payload = res.data?.data ?? res.data;
+    return {
+      accessToken: payload.accessToken,
+      refreshToken: payload.refreshToken,
+      expiresAt: payload.expiresIn ? Date.now() + payload.expiresIn * 1000 : payload.expiresAt,
+    };
   },
   onAuthFailure: () => {
     authFailureListener?.();

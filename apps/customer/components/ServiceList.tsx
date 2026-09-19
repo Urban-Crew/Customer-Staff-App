@@ -1,12 +1,13 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Star } from 'lucide-react-native';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SquircleView } from 'expo-squircle-view';
 import { cardStyle, LongArrow, radii, spacing, Text, useTheme, withAlpha } from '@ub/ui';
 import type { Service } from '@ub/shared-types';
 import { useServices } from '../hooks/useServices';
-
+import { ServiceConfigModal } from './ServiceConfigModal';
 
 const PLACEHOLDER_RATING = 4.8;
 
@@ -16,6 +17,9 @@ export interface ServiceListProps {
   title?: string;
   /** Set false when the screen already has its own page heading (e.g. the Services tab). */
   showTitle?: boolean;
+  onSelectService?: (service: Service) => void;
+  initialServiceId?: string;
+  categoryFilter?: string;
 }
 
 export function ServiceList({
@@ -23,9 +27,39 @@ export function ServiceList({
   layout = 'horizontal',
   title = 'SERVICES AT A GLANCE',
   showTitle = true,
+  onSelectService,
+  initialServiceId,
+  categoryFilter,
 }: ServiceListProps) {
   const { colors } = useTheme();
   const { data: services, isLoading } = useServices();
+  const [modalService, setModalService] = useState<Service | null>(null);
+
+  useEffect(() => {
+    if (initialServiceId && services?.length) {
+      const match = services.find((s) => s.id === initialServiceId);
+      if (match) {
+        setModalService(match);
+      }
+    }
+  }, [initialServiceId, services]);
+
+  const displayedServices = useMemo(() => {
+    if (!services) return [];
+    if (!categoryFilter) return services;
+    const filtered = services.filter(
+      (s) => s.categoryName?.toLowerCase() === categoryFilter.toLowerCase(),
+    );
+    return filtered.length > 0 ? filtered : services;
+  }, [services, categoryFilter]);
+
+  const handleCardPress = (service: Service) => {
+    if (onSelectService) {
+      onSelectService(service);
+    } else {
+      setModalService(service);
+    }
+  };
 
   return (
     <View style={{ marginBottom: spacing.lg }}>
@@ -48,10 +82,16 @@ export function ServiceList({
         <View style={styles.loadingRow}>
           <ActivityIndicator color={onDark ? '#fff' : colors.primary} />
         </View>
-      ) : !services?.length ? null : layout === 'vertical' ? (
+      ) : !displayedServices.length ? null : layout === 'vertical' ? (
         <View style={styles.list}>
-          {services.map((service, index) => (
-            <VerticalItem key={service.id} service={service} onDark={onDark} index={index} />
+          {displayedServices.map((service, index) => (
+            <VerticalItem
+              key={service.id}
+              service={service}
+              onDark={onDark}
+              index={index}
+              onPress={() => handleCardPress(service)}
+            />
           ))}
         </View>
       ) : (
@@ -60,21 +100,58 @@ export function ServiceList({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.row}
         >
-          {services.map((service) => (
-            <HorizontalItem key={service.id} service={service} onDark={onDark} />
+          {displayedServices.map((service) => (
+            <HorizontalItem
+              key={service.id}
+              service={service}
+              onDark={onDark}
+              onPress={() => handleCardPress(service)}
+            />
           ))}
         </ScrollView>
       )}
+
+      {/* Built-in variant/addon configurator modal */}
+      <ServiceConfigModal
+        visible={!!modalService}
+        service={
+          modalService
+            ? {
+                id: modalService.id,
+                name: modalService.name,
+                imageUrl: modalService.imageUrl,
+                categoryName: modalService.categoryName,
+                variants: modalService.variants,
+                addons: modalService.addons,
+              }
+            : null
+        }
+        onClose={() => setModalService(null)}
+      />
     </View>
   );
 }
 
-function HorizontalItem({ service, onDark }: { service: Service; onDark: boolean }) {
+function HorizontalItem({
+  service,
+  onDark,
+  onPress,
+}: {
+  service: Service;
+  onDark: boolean;
+  onPress?: () => void;
+}) {
   const { colors } = useTheme();
   const tint = onDark ? colors.primaryText : colors.ink;
 
   return (
-    <View style={styles.item}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.item,
+        pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+      ]}
+    >
       <LinearGradient
         colors={[withAlpha(tint, 0.22), withAlpha(tint, 0)]}
         start={{ x: 0.5, y: 0 }}
@@ -97,29 +174,35 @@ function HorizontalItem({ service, onDark }: { service: Service; onDark: boolean
       >
         {service.name}
       </Text>
-    </View>
+    </Pressable>
   );
 }
 
 /** Its own squircle card, icon chip + name + rating + a trailing chevron. Top-rated services get a shining gold border and a flag chip straddling it; the rest get a small grey top shine instead. */
+
 function VerticalItem({
   service,
   onDark,
   index,
+  onPress,
 }: {
   service: Service;
   onDark: boolean;
   index: number;
+  onPress?: () => void;
 }) {
   const { colors } = useTheme();
   const rating = service.rating ?? PLACEHOLDER_RATING;
-  // No real "top rated" data from the API yet — until then, mock exactly one
-  // (the first card) as top-rated instead of every card clearing the
-  // placeholder rating threshold.
   const isTopRated = service.topRated ?? index === 0;
 
   return (
-    <View style={styles.cardWrap}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.cardWrap,
+        pressed && { opacity: 0.85, transform: [{ scale: 0.99 }] },
+      ]}
+    >
       <SquircleView
         cornerSmoothing={100}
         style={[
@@ -186,7 +269,7 @@ function VerticalItem({
           </Text>
         </View>
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 
@@ -211,7 +294,7 @@ const styles = StyleSheet.create({
 
   // horizontal layout
   row: { paddingHorizontal: spacing.lg, gap: spacing.lg },
-  item: { alignItems: 'center', width: 84,overflow: 'hidden' },
+  item: { alignItems: 'center', width: 84, overflow: 'hidden' },
   outerCard: {
     width: 84,
     height: 78,

@@ -6,7 +6,10 @@ import { Button, OnboardingLayout, OtpInput, useTheme, useToast } from '@ub/ui';
 import type { OtpChannel } from '@ub/shared-types';
 import { describeOtpError, toE164 } from '../../lib/otp';
 import { useAuthStore } from '../../lib/store/authStore';
+import { useLocationStore } from '../../lib/store/locationStore';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
+import { useOnboardingStore } from '../../lib/store/onboardingStore';
+import { listAddresses } from '../../services/address.service';
 import { useResendOtp, useVerifyOtp } from '../../services/otp.service';
 
 export default function OtpScreen() {
@@ -40,9 +43,42 @@ export default function OtpScreen() {
       {
         onSuccess: async ({ user, tokens, isNewUser }) => {
           await setSession(user, tokens, isNewUser);
+
           // New accounts don't have an email yet — collect it before location.
-          // Returning users skip straight to location, which is always asked.
-          router.push(isNewUser ? '/(onboarding)/email' : '/(onboarding)/location-choice');
+          if (isNewUser) {
+            router.push('/(onboarding)/email');
+            return;
+          }
+
+          // Returning users: check if location/address is already saved in DB or locally
+          await useLocationStore.getState().hydrate();
+          let currentAddress = useLocationStore.getState().address;
+
+          try {
+            const savedList = await listAddresses();
+            if (savedList && savedList.length > 0) {
+              const activeId =
+                currentAddress && 'id' in currentAddress ? (currentAddress as any).id : undefined;
+              const matching = activeId ? savedList.find((a) => a.id === activeId) : undefined;
+              const defaultAddr = matching || savedList.find((a) => a.isDefault) || savedList[0];
+              await useLocationStore.getState().setAddress(defaultAddr);
+              currentAddress = defaultAddr;
+            } else {
+              // No saved addresses in database — clear stale cached address
+              await useLocationStore.getState().clearAddress();
+              currentAddress = null;
+            }
+          } catch {
+            // ignore network failure, keep offline cached address
+          }
+
+          if (currentAddress) {
+            await useOnboardingStore.getState().completeOnboarding();
+            useOnboardingFlowStore.getState().reset();
+            router.replace('/(tabs)');
+          } else {
+            router.push('/(onboarding)/location-choice');
+          }
         },
         onError: () => {
           setOtp('');

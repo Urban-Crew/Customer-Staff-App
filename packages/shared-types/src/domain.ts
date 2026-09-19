@@ -18,10 +18,28 @@ export interface Customer {
   createdAt: string;
 }
 
+export interface ServiceVariant {
+  id: string;
+  name: string;
+  price: number;
+  strikePrice?: number;
+  description?: string;
+}
+
+export interface ServiceAddon {
+  id: string;
+  name: string;
+  price: number;
+}
+
 export interface Service {
   id: string;
   name: string;
-  imageUrl: string;
+  description?: string;
+  imageUrl?: string;
+  categoryName?: string;
+  variants?: ServiceVariant[];
+  addons?: ServiceAddon[];
   /** Average rating out of 5, when the API provides one. */
   rating?: number;
   /** Flags the service for the "Top Rated" badge, when the API provides one. */

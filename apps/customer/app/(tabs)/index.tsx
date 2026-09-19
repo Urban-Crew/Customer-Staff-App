@@ -23,6 +23,7 @@ import { spacing, Text, useTheme } from '@ub/ui';
 import type { HomeHeaderConfig, HomeHeaderGradientDirection } from '@ub/shared-types';
 import type { SelectedAddress } from '../../lib/store/locationStore';
 import { AddressSheet } from '../../components/AddressSheet';
+import { FloatingCartBar } from '../../components/FloatingCartBar';
 import { HomeSearchRow } from '../../components/HomeSearchRow';
 import { PromoBanners } from '../../components/PromoBanners';
 import { TopIconsGrid } from '../../components/TopIconsGrid';
@@ -164,7 +165,10 @@ export default function HomeScreen() {
             >
               <MapPin size={16} color="#fff" />
               <Text fontWeight="600" style={styles.locationLabel} numberOfLines={1}>
-                {selectedAddress?.formattedAddress ?? 'Select delivery address'}
+                {(selectedAddress as any)?.formattedAddress ||
+                  (selectedAddress as any)?.formattedAddr ||
+                  (selectedAddress as any)?.shortLine ||
+                  'Select delivery address'}
               </Text>
             </Pressable>
 
@@ -202,6 +206,8 @@ export default function HomeScreen() {
           />
         </View>
       </Animated.View>
+
+      <FloatingCartBar bottomOffset={56} />
 
       <AddressSheet ref={addressSheetRef} onSelect={handleSelectAddress} />
     </View>

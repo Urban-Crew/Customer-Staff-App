@@ -1,11 +1,17 @@
+import { useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { spacing, useTheme } from '@ub/ui';
 import { Text } from '../../components';
+import { FloatingCartBar } from '../../components/FloatingCartBar';
 import { ServiceList } from '../../components/ServiceList';
 
 export default function ServicesScreen() {
   const { colors } = useTheme();
+  const { serviceId, categoryName } = useLocalSearchParams<{
+    serviceId?: string;
+    categoryName?: string;
+  }>();
 
   return (
     <SafeAreaView
@@ -13,7 +19,7 @@ export default function ServicesScreen() {
       edges={['top', 'bottom']}
     >
       <Text variant="heading" fontWeight="700" style={[styles.title, { color: colors.ink }]}>
-        Services
+        {categoryName || 'Services'}
       </Text>
 
       <ScrollView
@@ -21,8 +27,15 @@ export default function ServicesScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <ServiceList layout="vertical" showTitle={false} />
+        <ServiceList
+          layout="vertical"
+          showTitle={false}
+          initialServiceId={serviceId}
+          categoryFilter={categoryName}
+        />
       </ScrollView>
+
+      <FloatingCartBar bottomOffset={56} />
     </SafeAreaView>
   );
 }

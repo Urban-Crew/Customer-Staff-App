@@ -4,6 +4,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { Platform, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SplashScreen, useTheme } from '@ub/ui';
+import { useCart } from '../../hooks/useCart';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
 
 // react-navigation's bottom tabs handle the home-indicator inset fine on
@@ -19,6 +20,7 @@ export default function TabsLayout() {
   const hasOnboarded = useOnboardingStore((s) => s.hasOnboarded);
   const isOnboardingHydrating = useOnboardingStore((s) => s.isHydrating);
   const hydrateOnboarding = useOnboardingStore((s) => s.hydrate);
+  const { data: cart } = useCart();
 
   useEffect(() => {
     hydrateOnboarding();
@@ -75,18 +77,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="bookings"
-        options={{
-          title: 'Bookings',
-          tabBarIcon: ({ focused }) =>
-            focused ? (
-              <Ionicons name="calendar" size={ICON_SIZE} color={colors.inkMuted} />
-            ) : (
-              <Feather name="calendar" size={ICON_SIZE} color={colors.inkFaint} />
-            ),
-        }}
-      />
-      <Tabs.Screen
         name="services"
         options={{
           title: 'Services',
@@ -95,6 +85,41 @@ export default function TabsLayout() {
               <Ionicons name="grid" size={ICON_SIZE} color={colors.inkMuted} />
             ) : (
               <Feather name="grid" size={ICON_SIZE} color={colors.inkFaint} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="cart"
+        options={{
+          title: 'Cart',
+          tabBarBadge: cart && cart.itemCount > 0 ? cart.itemCount : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: colors.primary,
+            color: '#fff',
+            fontSize: 10,
+            fontWeight: '700',
+            minWidth: 16,
+            height: 16,
+            borderRadius: 8,
+            lineHeight: 14,
+          },
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <Ionicons name="cart" size={ICON_SIZE} color={colors.inkMuted} />
+            ) : (
+              <Feather name="shopping-bag" size={ICON_SIZE} color={colors.inkFaint} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="bookings"
+        options={{
+          title: 'Bookings',
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <Ionicons name="calendar" size={ICON_SIZE} color={colors.inkMuted} />
+            ) : (
+              <Feather name="calendar" size={ICON_SIZE} color={colors.inkFaint} />
             ),
         }}
       />
