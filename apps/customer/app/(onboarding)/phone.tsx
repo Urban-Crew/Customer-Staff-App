@@ -1,69 +1,77 @@
+import { useState } from 'react';
 import { router } from 'expo-router';
-import { Linking, Text } from 'react-native';
-import { OnboardingLayout, PhoneInput } from '@ub/ui';
+import { Image, Linking, Text } from 'react-native';
+import { Checkbox, OnboardingLayout, PhoneInput, useTheme, useToast } from '@ub/ui';
 import { describeOtpError, toE164 } from '../../lib/otp';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
-import { useOnboardingStore } from '../../lib/store/onboardingStore';
 import { useSendOtp } from '../../services/otp.service';
 
 const TERMS_URL = 'https://ubcrew.in/terms';
 const PRIVACY_URL = 'https://ubcrew.in/privacy';
 
 export default function PhoneScreen() {
+  const { colors } = useTheme();
+  const { showSuccess, showError } = useToast();
   const countryCode = useOnboardingFlowStore((s) => s.countryCode);
   const phone = useOnboardingFlowStore((s) => s.phone);
   const setCountryCode = useOnboardingFlowStore((s) => s.setCountryCode);
   const setPhone = useOnboardingFlowStore((s) => s.setPhone);
   const setOtpRequest = useOnboardingFlowStore((s) => s.setOtpRequest);
-  const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const sendOtp = useSendOtp();
+  const [usesWhatsapp, setUsesWhatsapp] = useState(false);
 
   const canContinue = phone.trim().length >= 7;
 
   const handleContinue = () => {
     if (!canContinue || sendOtp.isPending) return;
     sendOtp.mutate(
-      { phone: toE164(countryCode, phone) },
+      { phone: toE164(countryCode, phone), channel: usesWhatsapp ? 'wapp' : undefined },
       {
         onSuccess: ({ requestId, resendAvailableInSeconds }) => {
           setOtpRequest(requestId, resendAvailableInSeconds);
+          showSuccess('Code sent — check your messages.');
           router.push('/(onboarding)/otp');
+        },
+        onError: (err) => {
+          showError(describeOtpError(err));
         },
       },
     );
   };
 
-  const handleSkip = async () => {
-    await completeOnboarding();
-    router.replace('/');
+  // Skipping phone/OTP entirely still needs a location before landing on
+  // home — location-confirm is what actually marks onboarding complete,
+  // same as the regular verified-login path.
+  const handleSkip = () => {
+    router.push('/(onboarding)/location-choice');
   };
 
   return (
     <OnboardingLayout
-      title="Enter your phone number"
-      description="We'll send you a text with a verification code."
+      title="What's your number?"
+      description="We'll text a 6-digit code to make sure it's really you."
       onSkip={handleSkip}
       footnote={
         <>
-          By continuing, you agree to our{' '}
+          By continuing you agree to ubcrew's{' '}
           <Text
-            style={{ textDecorationLine: 'underline', color: '#000' }}
+            style={{ textDecorationLine: 'underline', color: colors.primary }}
             onPress={() => Linking.openURL(TERMS_URL)}
           >
-            T&C
+            Terms
           </Text>{' '}
           and{' '}
           <Text
-            style={{ textDecorationLine: 'underline', color: '#000' }}
+            style={{ textDecorationLine: 'underline', color: colors.primary }}
             onPress={() => Linking.openURL(PRIVACY_URL)}
           >
-            Privacy
-          </Text>{' '}
-          policy
+            Privacy Policy
+          </Text>
+          .
         </>
       }
       primaryAction={{
-        label: 'Send OTP',
+        label: 'Continue',
         onPress: handleContinue,
         disabled: !canContinue,
         loading: sendOtp.isPending,
@@ -76,8 +84,20 @@ export default function PhoneScreen() {
         onChangeText={setPhone}
         autoFocus
       />
+      <Checkbox
+        checked={usesWhatsapp}
+        onChange={setUsesWhatsapp}
+        icon={
+          <Image
+            source={require('../../assets/whatsapp.png')}
+            style={{ width: 18, height: 18 }}
+            resizeMode="contain"
+          />
+        }
+        label="I use WhatsApp on this phone number"
+      />
       {sendOtp.error ? (
-        <Text style={{ fontSize: 13, color: '#EF4444' }}>{describeOtpError(sendOtp.error)}</Text>
+        <Text style={{ fontSize: 13, color: colors.error }}>{describeOtpError(sendOtp.error)}</Text>
       ) : null}
     </OnboardingLayout>
   );

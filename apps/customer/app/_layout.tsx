@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -25,7 +26,7 @@ import {
   RobotoSlab_700Bold,
   RobotoSlab_800ExtraBold,
 } from '@expo-google-fonts/roboto-slab';
-import { SplashScreen as SplashScreenView, ThemeProvider } from '@ub/ui';
+import { SplashScreen as SplashScreenView, ThemeProvider, ToastProvider } from '@ub/ui';
 import { queryClient } from '../lib/queryClient';
 import { useAuthStore } from '../lib/store/authStore';
 
@@ -37,8 +38,7 @@ export default function RootLayout() {
   const hydrate = useAuthStore((state) => state.hydrate);
   const isHydrating = useAuthStore((state) => state.isHydrating);
 
-  // Load all app fonts once here so every <Text> component can use them
-  // immediately without its own useFonts call.
+
   const [fontsLoaded] = useFonts({
     Manrope_200ExtraLight,
     Manrope_300Light,
@@ -76,10 +76,14 @@ export default function RootLayout() {
       <KeyboardProvider>
         <SafeAreaProvider>
           <ThemeProvider>
-            <QueryClientProvider client={queryClient}>
-              <Stack screenOptions={{ headerShown: false }} />
-              <StatusBar style="dark" />
-            </QueryClientProvider>
+            <ToastProvider>
+              <QueryClientProvider client={queryClient}>
+                <BottomSheetModalProvider>
+                  <Stack screenOptions={{ headerShown: false }} />
+                  <StatusBar style="dark" />
+                </BottomSheetModalProvider>
+              </QueryClientProvider>
+            </ToastProvider>
           </ThemeProvider>
         </SafeAreaProvider>
       </KeyboardProvider>

@@ -9,25 +9,31 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@lodev09/react-native-true-sheet": "*",
     "expo-image": "*",
+    "expo-squircle-view": "*",
     "lucide-react-native": "*",
     "react": "*",
     "react-native": "*",
+    "react-native-gesture-handler": "*",
     "react-native-keyboard-controller": "*",
+    "react-native-reanimated": "*",
     "react-native-safe-area-context": "*",
-    "react-native-svg": "*"
+    "react-native-svg": "*",
+    "zustand": "*"
   },
   "devDependencies": {
-    "@lodev09/react-native-true-sheet": "^3.11.11",
     "@types/react": "~19.2.2",
     "expo-image": "~57.0.3",
+    "expo-squircle-view": "1.1.0",
     "lucide-react-native": "^1.31.0",
     "react": "19.2.3",
     "react-native": "0.86.2",
+    "react-native-gesture-handler": "~2.32.0",
     "react-native-keyboard-controller": "1.21.9",
+    "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.4",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "zustand": "^5.0.15"
   }
 }

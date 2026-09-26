@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { Clock } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
-import { Button, OnboardingLayout, OtpInput, useTheme } from '@ub/ui';
+import { Clock, MessageSquare } from 'lucide-react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { Button, OnboardingLayout, OtpInput, useTheme, useToast } from '@ub/ui';
 import type { OtpChannel } from '@ub/shared-types';
 import { describeOtpError, toE164 } from '../../lib/otp';
 import { useAuthStore } from '../../lib/store/authStore';
+import { useLocationStore } from '../../lib/store/locationStore';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
+import { useOnboardingStore } from '../../lib/store/onboardingStore';
+import { listAddresses } from '../../services/address.service';
 import { useResendOtp, useVerifyOtp } from '../../services/otp.service';
 
 export default function OtpScreen() {
   const { colors } = useTheme();
+  const { showSuccess, showError } = useToast();
   const countryCode = useOnboardingFlowStore((s) => s.countryCode);
   const phone = useOnboardingFlowStore((s) => s.phone);
   const requestId = useOnboardingFlowStore((s) => s.requestId);
@@ -39,9 +43,42 @@ export default function OtpScreen() {
       {
         onSuccess: async ({ user, tokens, isNewUser }) => {
           await setSession(user, tokens, isNewUser);
+
           // New accounts don't have an email yet — collect it before location.
-          // Returning users skip straight to location, which is always asked.
-          router.push(isNewUser ? '/(onboarding)/email' : '/(onboarding)/location-choice');
+          if (isNewUser) {
+            router.push('/(onboarding)/email');
+            return;
+          }
+
+          // Returning users: check if location/address is already saved in DB or locally
+          await useLocationStore.getState().hydrate();
+          let currentAddress = useLocationStore.getState().address;
+
+          try {
+            const savedList = await listAddresses();
+            if (savedList && savedList.length > 0) {
+              const activeId =
+                currentAddress && 'id' in currentAddress ? (currentAddress as any).id : undefined;
+              const matching = activeId ? savedList.find((a) => a.id === activeId) : undefined;
+              const defaultAddr = matching || savedList.find((a) => a.isDefault) || savedList[0];
+              await useLocationStore.getState().setAddress(defaultAddr);
+              currentAddress = defaultAddr;
+            } else {
+              // No saved addresses in database — clear stale cached address
+              await useLocationStore.getState().clearAddress();
+              currentAddress = null;
+            }
+          } catch {
+            // ignore network failure, keep offline cached address
+          }
+
+          if (currentAddress) {
+            await useOnboardingStore.getState().completeOnboarding();
+            useOnboardingFlowStore.getState().reset();
+            router.replace('/(tabs)');
+          } else {
+            router.push('/(onboarding)/location-choice');
+          }
         },
         onError: () => {
           setOtp('');
@@ -60,6 +97,10 @@ export default function OtpScreen() {
         onSuccess: (result) => {
           setOtpRequest(result.requestId, result.resendAvailableInSeconds);
           setSecondsLeft(result.resendAvailableInSeconds);
+          showSuccess(channel === 'wapp' ? 'Code resent on WhatsApp.' : 'Code resent via SMS.');
+        },
+        onError: (err) => {
+          showError(describeOtpError(err));
         },
       },
     );
@@ -71,17 +112,23 @@ export default function OtpScreen() {
 
   return (
     <OnboardingLayout
-      title="Enter verification code"
-      onBack={() => router.back()}
+      title="Enter the code"
+      onBack={() => {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace('/(onboarding)/phone');
+        }
+      }}
       primaryAction={{
-        label: 'Verify OTP',
+        label: 'Continue',
         onPress: handleVerify,
         disabled: !canVerify,
         loading: verifyOtp.isPending,
       }}
       description={
         <>
-          A 6-digit verification code has been sent to{'\n'}
+          Sent to{' '}
           <Text style={[styles.phone, { color: colors.ink }]}>
             {countryCode} {phone}
           </Text>
@@ -89,7 +136,9 @@ export default function OtpScreen() {
       }
     >
       <OtpInput value={otp} onChangeText={setOtp} autoFocus editable={!busy} />
-      {error ? <Text style={styles.error}>{describeOtpError(error)}</Text> : null}
+      {error ? (
+        <Text style={[styles.error, { color: colors.error }]}>{describeOtpError(error)}</Text>
+      ) : null}
 
       {secondsLeft > 0 ? (
         <View style={styles.timerRow}>
@@ -105,6 +154,7 @@ export default function OtpScreen() {
               variant="secondary"
               size="sm"
               fullWidth={false}
+              icon={<MessageSquare size={16} color={colors.secondaryText} />}
               onPress={() => handleResend('sms')}
               disabled={busy}
               loading={resendOtp.isPending && resendOtp.variables?.channel === 'sms'}
@@ -114,6 +164,13 @@ export default function OtpScreen() {
               variant="secondary"
               size="sm"
               fullWidth={false}
+              icon={
+                <Image
+                  source={require('../../assets/whatsapp.png')}
+                  style={{ width: 16, height: 16 }}
+                  resizeMode="contain"
+                />
+              }
               onPress={() => handleResend('wapp')}
               disabled={busy}
               loading={resendOtp.isPending && resendOtp.variables?.channel === 'wapp'}
@@ -127,7 +184,7 @@ export default function OtpScreen() {
 
 const styles = StyleSheet.create({
   phone: { fontWeight: '700' },
-  error: { fontSize: 13, color: '#EF4444' },
+  error: { fontSize: 13 },
   timerRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   timerLabel: { fontSize: 14 },
   resendBlock: { gap: 12 },

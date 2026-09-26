@@ -5,6 +5,7 @@ import {
   type TextProps,
   type TextStyle,
 } from 'react-native';
+import { useTheme } from './theme';
 
 // ---------------------------------------------------------------------------
 // Variant
@@ -65,11 +66,12 @@ export function Text({
   children,
   ...rest
 }: TextProps2) {
+  const { colors } = useTheme();
   const fontFamily =
     variant === 'heading' ? ROBOTO_SLAB_WEIGHT_MAP[fontWeight] : MANROPE_WEIGHT_MAP[fontWeight];
 
   return (
-    <RNText style={[styles.base, { fontFamily }, style]} {...rest}>
+    <RNText style={[styles.base, { fontFamily, color: colors.ink }, style]} {...rest}>
       {children}
     </RNText>
   );
@@ -78,6 +80,5 @@ export function Text({
 const styles = StyleSheet.create({
   base: {
     fontSize: 14,
-    color: '#0F172A',
   },
 });

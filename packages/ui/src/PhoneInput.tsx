@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 import {
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,8 +10,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { ChevronDown } from 'lucide-react-native';
-import { TrueSheet } from '@lodev09/react-native-true-sheet';
+import { ChevronDown, X } from 'lucide-react-native';
 import { cardStyle, useTheme } from './theme';
 
 export interface CountryCode {
@@ -57,7 +57,7 @@ export function PhoneInput({
   style,
 }: PhoneInputProps) {
   const { colors } = useTheme();
-  const sheetRef = useRef<TrueSheet>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <View
@@ -70,13 +70,13 @@ export function PhoneInput({
     >
       <Pressable
         style={({ pressed }) => [styles.codeSelector, pressed && styles.pressed]}
-        onPress={() => sheetRef.current?.present()}
+        onPress={() => setModalVisible(true)}
       >
         <Text style={[styles.code, { color: colors.ink }]}>{countryCode}</Text>
         <ChevronDown size={16} color={colors.inkMuted} />
       </Pressable>
 
-      <View style={[styles.divider, { backgroundColor: colors.hairline }]} />
+      <View style={[styles.divider, { backgroundColor: colors.inputBorder }]} />
 
       <TextInput
         value={value}
@@ -89,33 +89,49 @@ export function PhoneInput({
         style={[styles.numberInput, { color: colors.ink }]}
       />
 
-      <TrueSheet
-        ref={sheetRef}
-        detents={['auto', 0.6]}
-        style={[styles.sheet, { backgroundColor: colors.surface }]}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
       >
-        <Text style={[styles.sheetTitle, { color: colors.ink }]}>Select a country</Text>
-        <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false}>
-          {countries.map((country) => (
-            <Pressable
-              key={country.iso}
-              style={({ pressed }) => [
-                styles.countryRow,
-                { borderBottomColor: colors.hairline },
-                pressed && styles.pressed,
-              ]}
-              onPress={() => {
-                onChangeCountryCode(country.code);
-                sheetRef.current?.dismiss();
-              }}
-            >
-              <Text style={styles.flag}>{country.flag}</Text>
-              <Text style={[styles.countryName, { color: colors.ink }]}>{country.name}</Text>
-              <Text style={[styles.countryCode, { color: colors.inkMuted }]}>{country.code}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </TrueSheet>
+        <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+          <Pressable
+            style={[styles.sheet, { backgroundColor: colors.surface }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.sheetHeader}>
+              <Text style={[styles.sheetTitle, { color: colors.ink }]}>Select a country</Text>
+              <Pressable hitSlop={8} onPress={() => setModalVisible(false)}>
+                <X size={20} color={colors.inkMuted} />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false}>
+              {countries.map((country) => (
+                <Pressable
+                  key={country.iso}
+                  style={({ pressed }) => [
+                    styles.countryRow,
+                    { borderBottomColor: colors.hairline },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    onChangeCountryCode(country.code);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text style={styles.flag}>{country.flag}</Text>
+                  <Text style={[styles.countryName, { color: colors.ink }]}>{country.name}</Text>
+                  <Text style={[styles.countryCode, { color: colors.inkMuted }]}>
+                    {country.code}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -149,14 +165,31 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     backgroundColor: 'transparent',
   },
-  sheet: { padding: 24, gap: 16 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    padding: 24,
+    gap: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '65%',
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 4,
+  },
   sheetTitle: { fontSize: 16, fontWeight: '600' },
-  sheetList: { maxHeight: 420 },
+  sheetList: { maxHeight: 380 },
   countryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   flag: { fontSize: 20 },

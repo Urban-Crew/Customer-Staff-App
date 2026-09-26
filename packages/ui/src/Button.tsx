@@ -9,7 +9,8 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import { radii, useTheme } from './theme';
+import { SquircleView } from './SquircleView';
+import { ambientShadow, radii, withAlpha, useTheme } from './theme';
 
 export interface ButtonProps {
   label: string;
@@ -41,66 +42,84 @@ export function Button({
   const isSm = size === 'sm';
   const isPrimary = variant === 'primary';
   const isSecondary = variant === 'secondary';
-  const buttonRadius = radii.pill;
+  // Same squircle radius as the input fields, so buttons and inputs read as one shape language.
+  const buttonRadius = radii.squircle;
 
   const dynamicVariantStyle: ViewStyle = isPrimary
-    ? { backgroundColor: colors.primary, borderWidth: 0 }
+    ? {
+        backgroundColor: colors.primary,
+        borderWidth: 0,
+        boxShadow: `0px 10px 20px -8px ${withAlpha(colors.primary, 0.5)}`,
+      }
     : isSecondary
-      ? { backgroundColor: colors.secondaryBg, borderWidth: 1, borderColor: colors.secondaryBorder }
+      ? {
+          backgroundColor: colors.secondaryBg,
+          borderWidth: 1,
+          borderColor: colors.secondaryBorder,
+          boxShadow: ambientShadow,
+        }
       : { backgroundColor: 'transparent', borderWidth: 0 };
 
   return (
     <Pressable
       onPress={onPress}
       disabled={isDisabled || loading}
-      style={({ pressed }) => [
-        styles.base,
-        { borderRadius: buttonRadius },
-        isSm ? styles.sizeSm : styles.sizeMd,
-        fullWidth && styles.fullWidth,
-        dynamicVariantStyle,
-
-        isPrimary && loading && { backgroundColor: colors.primaryPressed },
-        isDisabled &&
-          !loading && {
-            backgroundColor: colors.disabledBg,
-            borderColor: colors.disabledBorder,
-            borderWidth: isPrimary || isSecondary ? 1 : 0,
-          },
-        pressed &&
-          !isDisabled &&
-          !loading && {
-            backgroundColor: isPrimary
-              ? colors.primaryPressed
-              : isSecondary
-                ? colors.secondaryPressed
-                : 'transparent',
-          },
-        style,
-      ]}
+      style={[fullWidth ? styles.fullWidth : styles.inline, style]}
     >
-      {loading ? (
-        <ActivityIndicator size="small" color={isPrimary ? colors.primaryText : colors.ink} />
-      ) : (
-        <View style={styles.contentRow}>
-          {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
-          <Text
-            style={[
-              styles.label,
-              isSm && styles.labelSm,
-              {
-                color: isDisabled
-                  ? colors.disabledText
-                  : isPrimary
-                    ? colors.primaryText
-                    : colors.secondaryText,
+      {({ pressed }) => (
+        <SquircleView
+          cornerSmoothing={100}
+          style={[
+            styles.base,
+            fullWidth ? styles.fullWidth : styles.inline,
+            { borderRadius: buttonRadius },
+            isSm ? styles.sizeSm : styles.sizeMd,
+            dynamicVariantStyle,
+
+            isPrimary && loading && { backgroundColor: colors.primaryPressed },
+            isDisabled &&
+              !loading && {
+                backgroundColor: colors.disabledBg,
+                borderColor: colors.disabledBorder,
+                borderWidth: isPrimary || isSecondary ? 1 : 0,
+                boxShadow: 'none',
               },
-              labelStyle,
-            ]}
-          >
-            {label}
-          </Text>
-        </View>
+            pressed &&
+              !isDisabled &&
+              !loading && {
+                backgroundColor: isPrimary
+                  ? colors.primaryPressed
+                  : isSecondary
+                    ? colors.secondaryPressed
+                    : 'transparent',
+              },
+            style,
+          ]}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color={isPrimary ? colors.primaryText : colors.ink} />
+          ) : (
+            <View style={styles.contentRow}>
+              {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
+              <Text
+                style={[
+                  styles.label,
+                  isSm && styles.labelSm,
+                  {
+                    color: isDisabled
+                      ? colors.disabledText
+                      : isPrimary
+                        ? colors.primaryText
+                        : colors.secondaryText,
+                  },
+                  labelStyle,
+                ]}
+              >
+                {label}
+              </Text>
+            </View>
+          )}
+        </SquircleView>
       )}
     </Pressable>
   );
@@ -113,6 +132,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   fullWidth: { alignSelf: 'stretch' },
+  inline: { alignSelf: 'flex-start' },
   sizeMd: {
     paddingVertical: 16,
     paddingHorizontal: 24,

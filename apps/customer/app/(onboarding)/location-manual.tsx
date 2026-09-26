@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { ChevronLeft, Lightbulb, LocateFixed, MapPin } from 'lucide-react-native';
+import { StatusBar } from 'expo-status-bar';
+import { Lightbulb, LocateFixed, MapPin } from 'lucide-react-native';
 import {
   ActivityIndicator,
   Pressable,
@@ -11,13 +12,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconButton, radii, spacing, useTheme } from '@ub/ui';
+import { BackButton, radii, spacing, useTheme } from '@ub/ui';
 import type { PlaceSuggestion } from '@ub/shared-types';
-import {
-  describeLocationError,
-  usePlacesAutocomplete,
-  useResolvePlace,
-} from '../../services/location.service';
+import { describeLocationError } from '../../services/location.service';
+import { usePlacesAutocomplete } from '../../hooks/usePlacesAutocomplete';
+import { useResolvePlace } from '../../hooks/useResolvePlace';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 
 export default function LocationManualScreen() {
@@ -47,23 +46,33 @@ export default function LocationManualScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <StatusBar style="light" />
       <SafeAreaView style={[styles.topBar, { backgroundColor: colors.primary }]} edges={['top']}>
         <View style={styles.topBarRow}>
-          <IconButton variant="plain" onPress={() => router.back()}>
-            <ChevronLeft size={24} color="#fff" />
-          </IconButton>
+          <BackButton
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/(onboarding)/location-choice');
+              }
+            }}
+            color={colors.primaryText}
+          />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Enter address (some tips below)"
-            placeholderTextColor="rgba(255,255,255,0.5)"
-            style={styles.searchInput}
+            placeholderTextColor={`${colors.primaryText}80`}
+            style={[styles.searchInput, { color: colors.primaryText }]}
             autoFocus
           />
         </View>
-        <View style={styles.tipBanner}>
-          <Lightbulb size={14} color="#fff" />
-          <Text style={styles.tipText}>Enter your building name or street for best results</Text>
+        <View style={[styles.tipBanner, { backgroundColor: `${colors.primaryText}1A` }]}>
+          <Lightbulb size={14} color={colors.primaryText} />
+          <Text style={[styles.tipText, { color: `${colors.primaryText}D9` }]}>
+            Enter your building name or street for best results
+          </Text>
         </View>
       </SafeAreaView>
 
@@ -140,7 +149,6 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: '#fff',
     fontSize: 17,
     paddingVertical: spacing.md,
   },
@@ -148,11 +156,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.1)',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
-  tipText: { flex: 1, color: 'rgba(255,255,255,0.85)', fontSize: 12 },
+  tipText: { flex: 1, fontSize: 12 },
   pressed: { opacity: 0.6 },
   emptyState: { flex: 1, alignItems: 'center', paddingTop: spacing.xxl, gap: spacing.lg },
   orRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, width: '80%' },

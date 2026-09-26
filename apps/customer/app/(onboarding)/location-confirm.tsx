@@ -11,15 +11,17 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, spacing, useTheme } from '@ub/ui';
-import { useReverseGeocode } from '../../services/location.service';
+import { useReverseGeocode } from '../../hooks/useReverseGeocode';
 import {
   getCurrentCoordinates,
   openLocationSettings,
   LocationError,
   type LocationErrorReason,
 } from '../../lib/location';
+import { useAuthStore } from '../../lib/store/authStore';
 import { useOnboardingFlowStore } from '../../lib/store/onboardingFlowStore';
 import { useOnboardingStore } from '../../lib/store/onboardingStore';
+import { useLocationStore } from '../../lib/store/locationStore';
 import { createLogger } from '../../lib/logger';
 import { Text } from '../../components';
 
@@ -46,6 +48,9 @@ export default function LocationConfirmScreen() {
   const setAddress = useOnboardingFlowStore((s) => s.setAddress);
   const resetFlow = useOnboardingFlowStore((s) => s.reset);
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const continueAsGuest = useAuthStore((s) => s.continueAsGuest);
+  const setSelectedLocation = useLocationStore((s) => s.setAddress);
   const reverseGeocode = useReverseGeocode();
   const [phase, setPhase] = useState<Phase>('fetching');
   const [errorReason, setErrorReason] = useState<LocationErrorReason>('unavailable');
@@ -101,12 +106,25 @@ export default function LocationConfirmScreen() {
   useEffect(() => {
     if (phase !== 'confirmed') return;
     const timer = setTimeout(async () => {
+      if (address) await setSelectedLocation(address);
+      // Reached here via Skip on the phone screen (no OTP verified) — mark
+      // the device as a guest so next launch skips straight past login too,
+      // same as a verified session would.
+      if (!isAuthenticated) await continueAsGuest();
       await completeOnboarding();
       resetFlow();
       router.replace('/');
     }, 1200);
     return () => clearTimeout(timer);
-  }, [phase, completeOnboarding, resetFlow]);
+  }, [
+    phase,
+    address,
+    completeOnboarding,
+    resetFlow,
+    setSelectedLocation,
+    isAuthenticated,
+    continueAsGuest,
+  ]);
 
   return (
     <SafeAreaView
@@ -116,7 +134,7 @@ export default function LocationConfirmScreen() {
       <View style={styles.center}>
         {phase === 'fetching' ? (
           <>
-            <PulsingPin pinColor={colors.ink} />
+            <PulsingPin pinColor={colors.primary} pinIconColor={colors.primaryText} />
             <Text style={[styles.fetchingLabel, { color: colors.inkMuted }]}>
               Fetching your location...
             </Text>
@@ -167,10 +185,7 @@ export default function LocationConfirmScreen() {
               fontWeight="700"
               style={[styles.confirmedTitle, { color: colors.ink }]}
             >
-              {address?.shortLine}
-            </Text>
-            <Text style={[styles.confirmedSubtitle, { color: colors.inkMuted }]}>
-              {address ? `${address.country} ${address.postalCode}` : ''}
+              {address?.formattedAddress}
             </Text>
           </>
         )}
@@ -179,7 +194,7 @@ export default function LocationConfirmScreen() {
   );
 }
 
-function PulsingPin({ pinColor }: { pinColor: string }) {
+function PulsingPin({ pinColor, pinIconColor }: { pinColor: string; pinIconColor: string }) {
   const scale = useSharedValue(0.6);
   const opacity = useSharedValue(0.6);
 
@@ -205,7 +220,7 @@ function PulsingPin({ pinColor }: { pinColor: string }) {
     <View style={styles.pulseWrap}>
       <Animated.View style={[styles.pulseRing, { backgroundColor: pinColor }, ringStyle]} />
       <View style={[styles.pin, { backgroundColor: pinColor }]}>
-        <MapPin size={22} color="#fff" />
+        <MapPin size={22} color={pinIconColor} />
       </View>
     </View>
   );

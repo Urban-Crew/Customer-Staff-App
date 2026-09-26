@@ -1,8 +1,19 @@
 import axios, { AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import type { ApiClientConfig } from './types';
 
+declare const console: { log: (...args: unknown[]) => void };
+
 interface RetriableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
+}
+
+function redactHeaders(headers: unknown): Record<string, unknown> | undefined {
+  if (!headers || typeof headers !== 'object') return undefined;
+  const redacted: Record<string, unknown> = { ...(headers as Record<string, unknown>) };
+  for (const key of Object.keys(redacted)) {
+    if (key.toLowerCase() === 'authorization') redacted[key] = '[REDACTED]';
+  }
+  return redacted;
 }
 
 /**
@@ -34,13 +45,27 @@ function unwrapEnvelope(body: unknown): unknown {
  *    requests that arrive while a refresh is already in flight.
  */
 export function createApiClient(config: ApiClientConfig): AxiosInstance {
-  const { baseURL, tokenStorage, refreshTokens, onAuthFailure, timeoutMs, headers } = config;
+  const { baseURL, tokenStorage, refreshTokens, onAuthFailure, timeoutMs, headers, enableLogging } =
+    config;
 
   const client = axios.create({
     baseURL,
     timeout: timeoutMs ?? 15000,
     headers,
   });
+
+  if (enableLogging) {
+    client.interceptors.request.use((requestConfig) => {
+      const method = requestConfig.method?.toUpperCase() ?? 'GET';
+      const url = `${requestConfig.baseURL ?? ''}${requestConfig.url ?? ''}`;
+      console.log(`[API] → ${method} ${url}`, {
+        params: requestConfig.params,
+        data: requestConfig.data,
+        headers: redactHeaders(requestConfig.headers),
+      });
+      return requestConfig;
+    });
+  }
 
   // Serializes concurrent refresh attempts: while a refresh is in flight,
   // every other 401'd request awaits this same promise instead of kicking
@@ -102,6 +127,26 @@ export function createApiClient(config: ApiClientConfig): AxiosInstance {
       return client(originalRequest);
     },
   );
+
+  if (enableLogging) {
+    client.interceptors.response.use(
+      (response) => {
+        const method = response.config.method?.toUpperCase() ?? 'GET';
+        const url = `${response.config.baseURL ?? ''}${response.config.url ?? ''}`;
+        console.log(`[API] ← ${response.status} ${method} ${url}`, response.data);
+        return response;
+      },
+      (error: AxiosError) => {
+        const method = error.config?.method?.toUpperCase() ?? 'GET';
+        const url = `${error.config?.baseURL ?? ''}${error.config?.url ?? ''}`;
+        console.log(
+          `[API] ✗ ${error.response?.status ?? 'ERR'} ${method} ${url}`,
+          error.response?.data ?? error.message,
+        );
+        return Promise.reject(error);
+      },
+    );
+  }
 
   return client;
 }

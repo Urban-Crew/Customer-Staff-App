@@ -1,10 +1,16 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { BackButton } from './BackButton';
 import { Button, type ButtonProps } from './Button';
-import { IconButton } from './IconButton';
 import { Text } from './Text';
 import { spacing, useTheme } from './theme';
 
@@ -38,27 +44,18 @@ export function OnboardingLayout({
       style={[styles.root, { backgroundColor: colors.background }, style]}
       edges={['top', 'bottom']}
     >
-      <KeyboardAvoidingView style={styles.flex} behavior="padding">
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <View style={styles.topNav}>
           <View style={styles.navLeft}>
-            {onBack ? (
-              <IconButton onPress={onBack}>
-                <ChevronLeft size={22} color={colors.ink} />
-              </IconButton>
-            ) : (
-              <View style={styles.navSpacer} />
-            )}
+            {onBack ? <BackButton onPress={onBack} /> : <View style={styles.navSpacer} />}
           </View>
 
           <View style={styles.navRight}>
             {onSkip ? (
-              <Button
-                label="Skip"
-                variant="secondary"
-                size="sm"
-                fullWidth={false}
-                onPress={onSkip}
-              />
+              <Button label="Skip" variant="ghost" size="sm" fullWidth={false} onPress={onSkip} />
             ) : null}
           </View>
         </View>
