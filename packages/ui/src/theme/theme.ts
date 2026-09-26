@@ -110,5 +110,3 @@ export const cardStyle: ViewStyle = {
   borderWidth: StyleSheet.hairlineWidth || 1,
   boxShadow: ambientShadow,
 };
-
-export { ThemeProvider, useTheme } from './ThemeProvider';
