@@ -5,6 +5,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MapPin } from 'lucide-react-native';
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   View,
@@ -81,7 +82,7 @@ function HeaderFill({
 export default function HomeScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { data: homeFeed } = useHomeFeed();
+  const { data: homeFeed, isLoading } = useHomeFeed();
   const selectedAddress = useLocationStore((s) => s.address);
   const hydrateLocation = useLocationStore((s) => s.hydrate);
   const setSelectedAddress = useLocationStore((s) => s.setAddress);
@@ -137,6 +138,15 @@ export default function HomeScreen() {
     setSelectedAddress(address);
     addressSheetRef.current?.dismiss();
   };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.loadingRoot, { backgroundColor: colors.background }]}>
+        <StatusBar style="dark" />
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -216,6 +226,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  loadingRoot: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   backdrop: { position: 'absolute', top: 0, left: 0, right: 0 },
   locationRow: {
     flexDirection: 'row',
