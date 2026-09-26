@@ -113,7 +113,13 @@ export default function OtpScreen() {
   return (
     <OnboardingLayout
       title="Enter the code"
-      onBack={() => router.back()}
+      onBack={() => {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace('/(onboarding)/phone');
+        }
+      }}
       primaryAction={{
         label: 'Continue',
         onPress: handleVerify,

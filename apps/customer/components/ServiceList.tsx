@@ -3,8 +3,16 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Star } from 'lucide-react-native';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SquircleView } from 'expo-squircle-view';
-import { cardStyle, LongArrow, radii, spacing, Text, useTheme, withAlpha } from '@ub/ui';
+import {
+  cardStyle,
+  LongArrow,
+  radii,
+  spacing,
+  SquircleView,
+  Text,
+  useTheme,
+  withAlpha,
+} from '@ub/ui';
 import type { Service } from '@ub/shared-types';
 import { useServices } from '../hooks/useServices';
 import { ServiceConfigModal } from './ServiceConfigModal';

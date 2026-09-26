@@ -2,9 +2,8 @@ import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { SquircleView } from 'expo-squircle-view';
 import { SvgUri } from 'react-native-svg';
-import { spacing, Text, useTheme } from '@ub/ui';
+import { spacing, SquircleView, Text, useTheme } from '@ub/ui';
 import type { HomeTopIcon } from '@ub/shared-types';
 
 export interface TopIconsGridProps {

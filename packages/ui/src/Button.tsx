@@ -9,7 +9,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import { SquircleView } from 'expo-squircle-view';
+import { SquircleView } from './SquircleView';
 import { ambientShadow, radii, withAlpha, useTheme } from './theme';
 
 export interface ButtonProps {
@@ -64,13 +64,14 @@ export function Button({
     <Pressable
       onPress={onPress}
       disabled={isDisabled || loading}
-      style={fullWidth && styles.fullWidth}
+      style={[fullWidth ? styles.fullWidth : styles.inline, style]}
     >
       {({ pressed }) => (
         <SquircleView
           cornerSmoothing={100}
           style={[
             styles.base,
+            fullWidth ? styles.fullWidth : styles.inline,
             { borderRadius: buttonRadius },
             isSm ? styles.sizeSm : styles.sizeMd,
             dynamicVariantStyle,
@@ -131,6 +132,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   fullWidth: { alignSelf: 'stretch' },
+  inline: { alignSelf: 'flex-start' },
   sizeMd: {
     paddingVertical: 16,
     paddingHorizontal: 24,

@@ -49,7 +49,16 @@ export default function LocationManualScreen() {
       <StatusBar style="light" />
       <SafeAreaView style={[styles.topBar, { backgroundColor: colors.primary }]} edges={['top']}>
         <View style={styles.topBarRow}>
-          <BackButton onPress={() => router.back()} color={colors.primaryText} />
+          <BackButton
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/(onboarding)/location-choice');
+              }
+            }}
+            color={colors.primaryText}
+          />
           <TextInput
             value={query}
             onChangeText={setQuery}

@@ -14,7 +14,7 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { CheckCircle2, Info, X, XCircle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SquircleView } from 'expo-squircle-view';
+import { SquircleView } from './SquircleView';
 import { Text } from './Text';
 import { useToastStore, type ToastItem, type ToastType } from './toastStore';
 import { radii, spacing, useTheme, withAlpha, type ThemeColors } from './theme';
@@ -67,8 +67,7 @@ function ToastPill({ toast, onDismiss }: ToastPillProps) {
       dragY.value = event.translationY > 0 ? event.translationY : event.translationY * 0.2;
     })
     .onEnd((event) => {
-      const shouldDismiss =
-        dragY.value > DISMISS_DISTANCE || event.velocityY > DISMISS_VELOCITY;
+      const shouldDismiss = dragY.value > DISMISS_DISTANCE || event.velocityY > DISMISS_VELOCITY;
 
       if (shouldDismiss) {
         dragY.value = withTiming(FLING_OUT_DISTANCE, {

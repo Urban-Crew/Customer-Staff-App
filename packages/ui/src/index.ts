@@ -10,6 +10,7 @@ export * from './OnboardingLayout';
 export * from './OtpInput';
 export * from './PhoneInput';
 export * from './SplashScreen';
+export * from './SquircleView';
 export * from './Text';
 export * from './theme';
 export * from './Toast';

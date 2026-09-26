@@ -1,7 +1,6 @@
 import { Search, UserRound } from 'lucide-react-native';
 import { Pressable, StyleSheet } from 'react-native';
-import { SquircleView } from 'expo-squircle-view';
-import { ambientShadow, IconButton, radii, useTheme } from '@ub/ui';
+import { ambientShadow, IconButton, radii, SquircleView, useTheme } from '@ub/ui';
 import { AnimatedSearchPlaceholder } from './AnimatedSearchPlaceholder';
 
 export interface HomeSearchRowProps {

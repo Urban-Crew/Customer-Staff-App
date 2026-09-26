@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { SquircleView } from 'expo-squircle-view';
+import { SquircleView } from './SquircleView';
 import { radii, useTheme } from './theme';
 
 export interface IconButtonProps {

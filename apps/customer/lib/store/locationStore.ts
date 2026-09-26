@@ -11,6 +11,7 @@ interface LocationState {
   isHydrating: boolean;
   hydrate: () => Promise<void>;
   setAddress: (address: SelectedAddress) => Promise<void>;
+  clearAddress: () => Promise<void>;
 }
 
 export const useLocationStore = create<LocationState>((set) => ({
@@ -25,5 +26,10 @@ export const useLocationStore = create<LocationState>((set) => ({
   setAddress: async (address) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(address));
     set({ address });
+  },
+
+  clearAddress: async () => {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    set({ address: null });
   },
 }));
