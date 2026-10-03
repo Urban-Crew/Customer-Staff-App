@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Star } from 'lucide-react-native';
+import { Search, Star } from 'lucide-react-native';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import {
   cardStyle,
@@ -27,7 +27,11 @@ export interface ServiceListProps {
   showTitle?: boolean;
   onSelectService?: (service: Service) => void;
   initialServiceId?: string;
+  categoryIdFilter?: string;
   categoryFilter?: string;
+  subCategoryIdFilter?: string;
+  subCategoryFilter?: string;
+  showEmptyState?: boolean;
 }
 
 export function ServiceList({
@@ -37,7 +41,11 @@ export function ServiceList({
   showTitle = true,
   onSelectService,
   initialServiceId,
+  categoryIdFilter,
   categoryFilter,
+  subCategoryIdFilter,
+  subCategoryFilter,
+  showEmptyState = false,
 }: ServiceListProps) {
   const { colors } = useTheme();
   const { data: services, isLoading } = useServices();
@@ -54,12 +62,23 @@ export function ServiceList({
 
   const displayedServices = useMemo(() => {
     if (!services) return [];
-    if (!categoryFilter) return services;
-    const filtered = services.filter(
-      (s) => s.categoryName?.toLowerCase() === categoryFilter.toLowerCase(),
-    );
-    return filtered.length > 0 ? filtered : services;
-  }, [services, categoryFilter]);
+    if (subCategoryIdFilter || subCategoryFilter) {
+      return services.filter(
+        (service) =>
+          (!!subCategoryIdFilter && service.subCategoryId === subCategoryIdFilter) ||
+          (!!subCategoryFilter &&
+            service.subCategoryName?.toLowerCase() === subCategoryFilter.toLowerCase()),
+      );
+    }
+    if (categoryIdFilter || categoryFilter)
+      return services.filter(
+        (service) =>
+          (!!categoryIdFilter && service.categoryId === categoryIdFilter) ||
+          (!!categoryFilter &&
+            service.categoryName?.toLowerCase() === categoryFilter.toLowerCase()),
+      );
+    return services;
+  }, [services, categoryIdFilter, categoryFilter, subCategoryIdFilter, subCategoryFilter]);
 
   const handleCardPress = (service: Service) => {
     if (onSelectService) {
@@ -90,7 +109,21 @@ export function ServiceList({
         <View style={styles.loadingRow}>
           <ActivityIndicator color={onDark ? '#fff' : colors.primary} />
         </View>
-      ) : !displayedServices.length ? null : layout === 'vertical' ? (
+      ) : !displayedServices.length ? (
+        showEmptyState ? (
+          <View style={styles.emptyState}>
+            <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceSubtle }]}>
+              <Search size={28} color={colors.inkFaint} />
+            </View>
+            <Text variant="heading" style={[styles.emptyTitle, { color: colors.ink }]}>
+              No services available
+            </Text>
+            <Text style={[styles.emptyDescription, { color: colors.inkMuted }]}>
+              Please check back soon for available services.
+            </Text>
+          </View>
+        ) : null
+      ) : layout === 'vertical' ? (
         <View style={styles.list}>
           {displayedServices.map((service, index) => (
             <VerticalItem
@@ -299,6 +332,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   loadingRow: { paddingVertical: spacing.lg, alignItems: 'center' },
+  emptyState: { alignItems: 'center', paddingHorizontal: spacing.xl, paddingVertical: spacing.xxl },
+  emptyIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  emptyTitle: { fontSize: 18, textAlign: 'center' },
+  emptyDescription: { fontSize: 14, textAlign: 'center', marginTop: spacing.xs },
 
   // horizontal layout
   row: { paddingHorizontal: spacing.lg, gap: spacing.lg },

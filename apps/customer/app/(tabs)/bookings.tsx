@@ -22,6 +22,7 @@ import {
 import { Button, cardStyle, radii, spacing, Text, useTheme } from '@ub/ui';
 import { useMyBookings } from '../../hooks/useBookings';
 import type { BookingDetails } from '../../services/booking.service';
+import { TabHeader } from '../../components/TabHeader';
 
 export default function BookingsScreen() {
   const { colors } = useTheme();
@@ -174,11 +175,7 @@ export default function BookingsScreen() {
       style={[styles.root, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      <View style={styles.titleRow}>
-        <Text variant="heading" fontWeight="700" style={[styles.title, { color: colors.ink }]}>
-          Bookings
-        </Text>
-      </View>
+      <TabHeader title="Bookings" />
 
       {isLoading ? (
         <View style={styles.loadingWrap}>
@@ -211,6 +208,7 @@ export default function BookingsScreen() {
             label="Browse services"
             onPress={() => router.push('/services')}
             fullWidth={false}
+            style={{ alignSelf: 'center' }}
           />
         </View>
       ) : (
@@ -235,14 +233,6 @@ export default function BookingsScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  titleRow: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xs,
-  },
-  title: {
-    fontSize: 22,
-  },
   loadingWrap: {
     flex: 1,
     alignItems: 'center',

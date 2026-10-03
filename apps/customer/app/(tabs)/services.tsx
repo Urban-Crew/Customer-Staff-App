@@ -2,15 +2,16 @@ import { useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { spacing, useTheme } from '@ub/ui';
-import { Text } from '../../components';
 import { FloatingCartBar } from '../../components/FloatingCartBar';
 import { ServiceList } from '../../components/ServiceList';
+import { TabHeader } from '../../components/TabHeader';
 
 export default function ServicesScreen() {
   const { colors } = useTheme();
-  const { serviceId, categoryName } = useLocalSearchParams<{
+  const { serviceId, categoryName, subCategoryName } = useLocalSearchParams<{
     serviceId?: string;
     categoryName?: string;
+    subCategoryName?: string;
   }>();
 
   return (
@@ -18,9 +19,7 @@ export default function ServicesScreen() {
       style={[styles.root, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      <Text variant="heading" fontWeight="700" style={[styles.title, { color: colors.ink }]}>
-        {categoryName || 'Services'}
-      </Text>
+      <TabHeader title={subCategoryName || categoryName || 'Services'} />
 
       <ScrollView
         style={styles.scroll}
@@ -30,8 +29,10 @@ export default function ServicesScreen() {
         <ServiceList
           layout="vertical"
           showTitle={false}
+          showEmptyState
           initialServiceId={serviceId}
           categoryFilter={categoryName}
+          subCategoryFilter={subCategoryName}
         />
       </ScrollView>
 
@@ -42,12 +43,6 @@ export default function ServicesScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  title: {
-    fontSize: 22,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-  },
   scroll: { flex: 1 },
   scrollContent: { paddingTop: spacing.sm, paddingBottom: spacing.xxl },
 });

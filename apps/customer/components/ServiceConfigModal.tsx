@@ -26,6 +26,12 @@ export interface ServiceConfigItem {
     name: string;
     price: number;
     description?: string;
+    pricingModel?: string;
+    includesGst?: boolean;
+    taxRatePct?: number;
+    shiftDays?: number | null;
+    shiftCount?: number | null;
+    dayCount?: number | null;
   }>;
   addons?: Array<{
     id: string;
@@ -38,9 +44,15 @@ interface ServiceConfigModalProps {
   visible: boolean;
   service: ServiceConfigItem | null;
   onClose: () => void;
+  initialVariantId?: string;
 }
 
-export function ServiceConfigModal({ visible, service, onClose }: ServiceConfigModalProps) {
+export function ServiceConfigModal({
+  visible,
+  service,
+  onClose,
+  initialVariantId,
+}: ServiceConfigModalProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { showToast } = useToast();
@@ -56,26 +68,34 @@ export function ServiceConfigModal({ visible, service, onClose }: ServiceConfigM
 
   React.useEffect(() => {
     if (service?.variants && service.variants.length > 0) {
-      setSelectedVariantId(service.variants[0].id);
+      setSelectedVariantId(
+        service.variants.find((variant) => variant.id === initialVariantId)?.id ??
+          service.variants[0].id,
+      );
     } else {
       setSelectedVariantId('');
     }
     setSelectedAddonIds([]);
     setQuantity(1);
     setNotes('');
-  }, [service?.id]);
+  }, [service?.id, initialVariantId]);
 
   if (!visible || !service) return null;
 
   const activeVariant =
     availableVariants.find((v) => v.id === selectedVariantId) || availableVariants[0];
+  const isCustomQuote = activeVariant?.pricingModel === 'QUOTE_ON_VISIT';
 
   const addonsTotal = selectedAddonIds.reduce((sum, adId) => {
     const ad = availableAddons.find((a) => a.id === adId);
     return sum + (ad?.price || 0);
   }, 0);
 
-  const totalPrice = activeVariant ? (activeVariant.price + addonsTotal) * quantity : 0;
+  const enteredPrice = activeVariant ? (activeVariant.price + addonsTotal) * quantity : 0;
+  const totalPrice =
+    activeVariant && activeVariant.includesGst === false
+      ? enteredPrice * (1 + (activeVariant.taxRatePct ?? 0) / 100)
+      : enteredPrice;
 
   const toggleAddon = (id: string) => {
     setSelectedAddonIds((prev) =>
@@ -94,6 +114,10 @@ export function ServiceConfigModal({ visible, service, onClose }: ServiceConfigM
 
     if (!activeVariant) {
       showToast('No package variant available for this service', 'error');
+      return;
+    }
+    if (activeVariant.pricingModel === 'QUOTE_ON_VISIT') {
+      showToast('A caregiver quote is required before this package can be booked', 'error');
       return;
     }
 
@@ -156,7 +180,7 @@ export function ServiceConfigModal({ visible, service, onClose }: ServiceConfigM
           <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
             {/* Shift / Variant Selection */}
             <Text fontWeight="700" style={styles.sectionHeader}>
-              Choose Shift Duration
+              Choose a Package
             </Text>
             {availableVariants.length === 0 ? (
               <Text
@@ -213,7 +237,12 @@ export function ServiceConfigModal({ visible, service, onClose }: ServiceConfigM
                         fontWeight="800"
                         style={[styles.variantPrice, { color: colors.primary }]}
                       >
-                        ₹{variant.price}
+                        {variant.pricingModel === 'QUOTE_ON_VISIT'
+                          ? 'Quote'
+                          : `₹${(variant.includesGst === false
+                              ? variant.price * (1 + (variant.taxRatePct ?? 0) / 100)
+                              : variant.price
+                            ).toFixed(0)}`}
                       </Text>
                     </Pressable>
                   );
@@ -222,7 +251,7 @@ export function ServiceConfigModal({ visible, service, onClose }: ServiceConfigM
             )}
 
             {/* Addons */}
-            {availableAddons.length > 0 ? (
+            {availableAddons.length > 0 && !isCustomQuote ? (
               <>
                 <Text fontWeight="700" style={styles.sectionHeader}>
                   Recommended Care Add-ons
@@ -268,37 +297,49 @@ export function ServiceConfigModal({ visible, service, onClose }: ServiceConfigM
             ) : null}
 
             {/* Quantity Stepper */}
-            <View style={styles.quantityRow}>
-              <View>
-                <Text fontWeight="700" style={styles.quantityLabel}>
-                  Number of Days / Shifts
-                </Text>
-                <Text style={[styles.quantitySubtitle, { color: colors.inkMuted }]}>
-                  Consecutive caregiving sessions
-                </Text>
-              </View>
-              <View
-                style={[
-                  styles.stepper,
-                  { backgroundColor: colors.surfaceSubtle, borderColor: colors.border },
-                ]}
-              >
-                <Pressable
-                  onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-                  style={styles.stepperBtn}
-                  disabled={quantity <= 1}
+            {!isCustomQuote && (
+              <View style={styles.quantityRow}>
+                <View>
+                  <Text fontWeight="700" style={styles.quantityLabel}>
+                    Package quantity
+                  </Text>
+                  <Text style={[styles.quantitySubtitle, { color: colors.inkMuted }]}>
+                    Number of identical packages
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.stepper,
+                    { backgroundColor: colors.surfaceSubtle, borderColor: colors.border },
+                  ]}
                 >
-                  <Minus size={16} color={quantity <= 1 ? colors.inkFaint : colors.ink} />
-                </Pressable>
-                <Text fontWeight="800" style={styles.stepperValue}>
-                  {quantity}
-                </Text>
-                <Pressable onPress={() => setQuantity((q) => q + 1)} style={styles.stepperBtn}>
-                  <Plus size={16} color={colors.ink} />
-                </Pressable>
+                  <Pressable
+                    onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+                    style={styles.stepperBtn}
+                    disabled={quantity <= 1}
+                  >
+                    <Minus size={16} color={quantity <= 1 ? colors.inkFaint : colors.ink} />
+                  </Pressable>
+                  <Text fontWeight="800" style={styles.stepperValue}>
+                    {quantity}
+                  </Text>
+                  <Pressable onPress={() => setQuantity((q) => q + 1)} style={styles.stepperBtn}>
+                    <Plus size={16} color={colors.ink} />
+                  </Pressable>
+                </View>
               </View>
-            </View>
-
+            )}
+            {isCustomQuote && (
+              <Text
+                style={{
+                  color: colors.inkMuted,
+                  marginVertical: spacing.md,
+                  paddingHorizontal: spacing.sm,
+                }}
+              >
+                A caregiver will assess the request and provide a quote before booking.
+              </Text>
+            )}
             {/* Special Instructions */}
             <Text fontWeight="700" style={styles.sectionHeader}>
               Patient Care Notes (Optional)
@@ -324,14 +365,23 @@ export function ServiceConfigModal({ visible, service, onClose }: ServiceConfigM
           {/* Sticky Bottom CTA */}
           <View style={[styles.footer, { borderTopColor: colors.border }]}>
             <View>
-              <Text style={[styles.totalLabel, { color: colors.inkMuted }]}>Total Estimate</Text>
+              <Text style={[styles.totalLabel, { color: colors.inkMuted }]}>
+                {isCustomQuote ? 'Price' : 'Total estimate'}
+              </Text>
               <Text variant="heading" fontWeight="800" style={styles.totalAmount}>
-                ₹{totalPrice.toFixed(0)}
+                {isCustomQuote ? 'After assessment' : `₹${totalPrice.toFixed(0)}`}
               </Text>
             </View>
             <Button
-              label={isPending ? 'Adding...' : `Add to Cart • ₹${totalPrice.toFixed(0)}`}
+              label={
+                isCustomQuote
+                  ? 'Quote required'
+                  : isPending
+                    ? 'Adding...'
+                    : `Add to Cart • ₹${totalPrice.toFixed(0)}`
+              }
               onPress={handleAddToCart}
+              disabled={isCustomQuote}
               loading={isPending}
               fullWidth={false}
               style={styles.addBtn}

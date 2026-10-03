@@ -54,6 +54,7 @@ export interface HomeTopIconEntity {
   name: string;
   slug: string;
   iconUrl: string | null;
+  hasSubCategories?: boolean;
 }
 
 export type HomeTopIconEntityType = 'CATEGORY' | 'SUB_CATEGORY' | 'SERVICE_VARIANT' | 'SERVICE';
@@ -69,9 +70,12 @@ export interface HomeTopIcon {
 export interface HomeSectionServiceEntity {
   name: string;
   slug: string;
-  thumbnailUrl: string;
-  startingPriceMinor: number;
-  strikePriceMinor: number | null;
+  iconUrl?: string | null;
+  thumbnailUrl?: string | null;
+  imageUrl?: string | null;
+  hasSubCategories?: boolean;
+  startingPriceMinor?: number;
+  strikePriceMinor?: number | null;
 }
 
 export interface HomeSectionItem {
@@ -86,6 +90,7 @@ export interface HomeSection {
   id: string;
   title: string;
   displayOrder: number;
+  status?: string;
   items: HomeSectionItem[];
 }
 

@@ -13,7 +13,6 @@ import { Image } from 'expo-image';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
   Calendar,
   CheckCircle2,
   ChevronRight,
@@ -23,7 +22,6 @@ import {
   Minus,
   Plus,
   ShieldCheck,
-  ShoppingBag,
   Tag,
   Trash2,
 } from 'lucide-react-native';
@@ -31,6 +29,8 @@ import { Button, cardStyle, radii, spacing, Text, useTheme, useToast } from '@ub
 import type { CartItem, PaymentMethod } from '@ub/shared-types';
 import { AddressSheet } from '../../components/AddressSheet';
 import { RazorpayModal, type RazorpaySuccessPayload } from '../../components/RazorpayModal';
+import { TabHeader } from '../../components/TabHeader';
+import { CartIcon } from '../../components/CartIcon';
 import {
   useApplyCoupon,
   useCart,
@@ -311,6 +311,7 @@ export default function CartScreen() {
   if (isCartLoading) {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
+        <TabHeader title="Cart" />
         <View style={styles.loadingWrap}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.loadingText, { color: colors.inkMuted }]}>Loading your cart...</Text>
@@ -323,23 +324,11 @@ export default function CartScreen() {
   if (!cart || cart.items.length === 0) {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
-        <View style={styles.header}>
-          {router.canGoBack() ? (
-            <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-              <ArrowLeft size={20} color={colors.ink} />
-            </Pressable>
-          ) : (
-            <View style={styles.backBtn} />
-          )}
-          <Text variant="heading" fontWeight="700" style={styles.headerTitle}>
-            Your Cart
-          </Text>
-          <View style={styles.backBtn} />
-        </View>
+        <TabHeader title="Cart" />
 
         <View style={styles.emptyContainer}>
           <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceSubtle }]}>
-            <ShoppingBag size={48} color={colors.inkFaint} />
+            <CartIcon size={48} color={colors.inkFaint} />
           </View>
           <Text variant="heading" fontWeight="700" style={styles.emptyTitle}>
             Your cart is empty
@@ -352,7 +341,7 @@ export default function CartScreen() {
             label="Explore Services"
             onPress={() => router.push('/services')}
             fullWidth={false}
-            style={{ marginTop: spacing.md }}
+            style={{ alignSelf: 'center', marginTop: spacing.md }}
           />
         </View>
       </SafeAreaView>
@@ -361,20 +350,7 @@ export default function CartScreen() {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Top Navigation */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        {router.canGoBack() ? (
-          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={20} color={colors.ink} />
-          </Pressable>
-        ) : (
-          <View style={styles.backBtn} />
-        )}
-        <Text variant="heading" fontWeight="700" style={styles.headerTitle}>
-          Review & Checkout ({cart.itemCount})
-        </Text>
-        <View style={styles.backBtn} />
-      </View>
+      <TabHeader title="Cart" />
 
       <ScrollView
         style={styles.scroll}
@@ -822,23 +798,6 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 17,
   },
   loadingWrap: {
     flex: 1,

@@ -1,15 +1,14 @@
-import { Search, UserRound } from 'lucide-react-native';
+import { Search } from 'lucide-react-native';
 import { Pressable, StyleSheet } from 'react-native';
-import { ambientShadow, IconButton, radii, SquircleView, useTheme } from '@ub/ui';
+import { ambientShadow, radii, SquircleView, useTheme } from '@ub/ui';
 import { AnimatedSearchPlaceholder } from './AnimatedSearchPlaceholder';
 
 export interface HomeSearchRowProps {
   onPressSearch: () => void;
-  onPressProfile: () => void;
 }
 
-/** The search bar + profile button pair shown on the home screen's header. */
-export function HomeSearchRow({ onPressSearch, onPressProfile }: HomeSearchRowProps) {
+/** The search bar shown on the home screen's header. */
+export function HomeSearchRow({ onPressSearch }: HomeSearchRowProps) {
   const { colors } = useTheme();
 
   return (
@@ -26,9 +25,6 @@ export function HomeSearchRow({ onPressSearch, onPressProfile }: HomeSearchRowPr
           <AnimatedSearchPlaceholder color={colors.placeholder} />
         </SquircleView>
       </Pressable>
-      <IconButton onPress={onPressProfile}>
-        <UserRound size={20} color={colors.ink} />
-      </IconButton>
     </>
   );
 }

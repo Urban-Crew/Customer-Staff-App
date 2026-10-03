@@ -24,6 +24,12 @@ export interface ServiceVariant {
   price: number;
   strikePrice?: number;
   description?: string;
+  pricingModel?: string;
+  shiftDays?: number | null;
+  shiftCount?: number | null;
+  dayCount?: number | null;
+  includesGst?: boolean;
+  taxRatePct?: number;
 }
 
 export interface ServiceAddon {
@@ -37,7 +43,10 @@ export interface Service {
   name: string;
   description?: string;
   imageUrl?: string;
+  categoryId?: string;
   categoryName?: string;
+  subCategoryId?: string | null;
+  subCategoryName?: string;
   variants?: ServiceVariant[];
   addons?: ServiceAddon[];
   /** Average rating out of 5, when the API provides one. */

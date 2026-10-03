@@ -25,6 +25,7 @@ import type { HomeHeaderConfig, HomeHeaderGradientDirection } from '@ub/shared-t
 import type { SelectedAddress } from '../../lib/store/locationStore';
 import { AddressSheet } from '../../components/AddressSheet';
 import { FloatingCartBar } from '../../components/FloatingCartBar';
+import { HomeSections } from '../../components/HomeSections';
 import { HomeSearchRow } from '../../components/HomeSearchRow';
 import { PromoBanners } from '../../components/PromoBanners';
 import { TopIconsGrid } from '../../components/TopIconsGrid';
@@ -183,10 +184,7 @@ export default function HomeScreen() {
             </Pressable>
 
             <Animated.View style={[styles.navRow, inlineNavStyle]}>
-              <HomeSearchRow
-                onPressSearch={() => router.push('/search')}
-                onPressProfile={() => router.push('/account')}
-              />
+              <HomeSearchRow onPressSearch={() => router.push('/search')} />
             </Animated.View>
 
             <View style={styles.bannersWrap}>
@@ -196,6 +194,7 @@ export default function HomeScreen() {
 
           <View style={[styles.body, { backgroundColor: colors.background }]}>
             <TopIconsGrid topIcons={homeFeed?.topIcons ?? []} />
+            <HomeSections sections={homeFeed?.sections ?? []} />
           </View>
         </Animated.ScrollView>
       </SafeAreaView>
@@ -210,10 +209,7 @@ export default function HomeScreen() {
           style={StyleSheet.absoluteFill}
         />
         <View style={styles.navRow}>
-          <HomeSearchRow
-            onPressSearch={() => router.push('/search')}
-            onPressProfile={() => router.push('/account')}
-          />
+          <HomeSearchRow onPressSearch={() => router.push('/search')} />
         </View>
       </Animated.View>
 

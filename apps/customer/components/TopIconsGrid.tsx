@@ -4,10 +4,23 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { spacing, SquircleView, Text, useTheme } from '@ub/ui';
-import type { HomeTopIcon } from '@ub/shared-types';
 
 export interface TopIconsGridProps {
-  topIcons: HomeTopIcon[];
+  topIcons: {
+    id: string;
+    entityType: string;
+    entityId: string;
+    displayOrder: number;
+    entity: {
+      name: string;
+      slug: string;
+      iconUrl?: string | null;
+      thumbnailUrl?: string | null;
+      imageUrl?: string | null;
+      hasSubCategories?: boolean;
+    };
+  }[];
+  showAllServices?: boolean;
 }
 
 const COLUMNS = 3;
@@ -34,17 +47,30 @@ function EntityIcon({ uri, color }: { uri: string | null; color: string }) {
  * API — always closes out the grid, using the same icon as the bottom
  * nav's Services tab.
  */
-export function TopIconsGrid({ topIcons }: TopIconsGridProps) {
+export function TopIconsGrid({ topIcons, showAllServices = true }: TopIconsGridProps) {
   const { colors } = useTheme();
   const sorted = [...topIcons].sort((a, b) => a.displayOrder - b.displayOrder);
 
-  const handleItemPress = (item: HomeTopIcon) => {
+  const handleItemPress = (item: TopIconsGridProps['topIcons'][number]) => {
     if (item.entityType === 'SERVICE' || item.entityType === 'SERVICE_VARIANT') {
       router.push({
-        pathname: '/services',
-        params: { serviceId: item.entityId },
+        pathname: '/service-detail',
+        params:
+          item.entityType === 'SERVICE'
+            ? { serviceId: item.entityId }
+            : { variantId: item.entityId },
       });
-    } else if (item.entityType === 'CATEGORY' || item.entityType === 'SUB_CATEGORY') {
+    } else if (item.entityType === 'CATEGORY' && item.entity.hasSubCategories !== true) {
+      router.push({
+        pathname: '/category-services',
+        params: { categoryId: item.entityId, categoryName: item.entity.name },
+      });
+    } else if (item.entityType === 'SUB_CATEGORY') {
+      router.push({
+        pathname: '/category-services',
+        params: { subCategoryId: item.entityId, subCategoryName: item.entity.name },
+      });
+    } else if (item.entityType === 'CATEGORY') {
       router.push({
         pathname: '/services',
         params: { categoryName: item.entity.name },
@@ -67,7 +93,12 @@ export function TopIconsGrid({ topIcons }: TopIconsGridProps) {
               cornerSmoothing={100}
               style={[styles.iconChip, { backgroundColor: colors.surfaceSubtle }]}
             >
-              <EntityIcon uri={item.entity.iconUrl} color={colors.ink} />
+              <EntityIcon
+                uri={
+                  item.entity.iconUrl ?? item.entity.thumbnailUrl ?? item.entity.imageUrl ?? null
+                }
+                color={colors.ink}
+              />
             </SquircleView>
             <Text numberOfLines={2} style={[styles.label, { color: colors.ink }]}>
               {item.entity.name}
@@ -76,19 +107,25 @@ export function TopIconsGrid({ topIcons }: TopIconsGridProps) {
         </View>
       ))}
 
-      <View style={styles.cell}>
-        <Pressable hitSlop={4} style={styles.cellContent} onPress={() => router.push('/services')}>
-          <SquircleView
-            cornerSmoothing={100}
-            style={[styles.iconChip, { backgroundColor: colors.surfaceSubtle }]}
+      {showAllServices && (
+        <View style={styles.cell}>
+          <Pressable
+            hitSlop={4}
+            style={styles.cellContent}
+            onPress={() => router.push('/services')}
           >
-            <Feather name="grid" size={ICON_SIZE - 2} color={colors.ink} />
-          </SquircleView>
-          <Text numberOfLines={2} style={[styles.label, { color: colors.ink }]}>
-            All Services
-          </Text>
-        </Pressable>
-      </View>
+            <SquircleView
+              cornerSmoothing={100}
+              style={[styles.iconChip, { backgroundColor: colors.surfaceSubtle }]}
+            >
+              <Feather name="grid" size={ICON_SIZE - 2} color={colors.ink} />
+            </SquircleView>
+            <Text numberOfLines={2} style={[styles.label, { color: colors.ink }]}>
+              All Services
+            </Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
